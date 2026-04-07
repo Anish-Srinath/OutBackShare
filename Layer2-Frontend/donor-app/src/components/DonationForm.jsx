@@ -1,40 +1,31 @@
 import React, { useState, useRef } from 'react'
+import { useParams } from 'react-router-dom'
 import { recognizeFoodFromImage, submitListing } from '../services/api'
 import '../styles/DonationForm.css'
 
 const DonationForm = () => {
+  const { postcode } = useParams()
   const cameraRef = useRef(null)
+  const galleryRef = useRef(null)
   const [formData, setFormData] = useState({
     foodType: '',
     quantity: '',
-    unit: 'portions',
-    postcode: '',
+    postcode: postcode || '',
     orgCode: '',
-    description: '',
     photoUrl: null
   })
   
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
-  const [showCamera, setShowCamera] = useState(false)
-  const [timer, setTimer] = useState(60)
+  const [aiProcessing, setAiProcessing] = useState(false)
 
-  // Start 60-second timer
-  React.useEffect(() => {
-    if (!success && timer > 0) {
-      const interval = setInterval(() => {
-        setTimer(t => t - 1)
-      }, 1000)
-      return () => clearInterval(interval)
-    }
-  }, [timer, success])
 
   const handleCameraCapture = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    setLoading(true)
+    setAiProcessing(true)
     setError(null)
 
     try {
@@ -46,16 +37,20 @@ const DonationForm = () => {
       
       setFormData(prev => ({
         ...prev,
-        foodType: result.foodType || '',
-        quantity: result.quantity || '',
+        foodType: result.foodType || 'Unknown Food',
+        quantity: result.quantity || '1',
         photoUrl: URL.createObjectURL(file)
       }))
-      setShowCamera(false)
     } catch (err) {
-      setError('Failed to process image. Please try again.')
-      console.error(err)
+      // Fallback: still accept the photo even if AI fails
+      setFormData(prev => ({
+        ...prev,
+        photoUrl: URL.createObjectURL(file),
+        foodType: 'Mixed Food Items'
+      }))
+      setError(null)
     } finally {
-      setLoading(false)
+      setAiProcessing(false)
     }
   }
 
@@ -84,13 +79,10 @@ const DonationForm = () => {
       setFormData({
         foodType: '',
         quantity: '',
-        unit: 'portions',
         postcode: '',
         orgCode: '',
-        description: '',
         photoUrl: null
       })
-      setTimer(60)
 
       // Show success message for 3 seconds
       setTimeout(() => {
@@ -106,12 +98,12 @@ const DonationForm = () => {
 
   if (success) {
     return (
-      <div className="container-center">
+      <div className="success-container">
         <div className="success-card">
           <div className="success-icon">✓</div>
-          <h2>Thank You!</h2>
-          <p>Your food listing has been posted successfully.</p>
-          <p className="text-sm text-gray-600">Organizations will be notified about your surplus.</p>
+          <h2>Listed!</h2>
+          <p>Your food is now visible to local food banks.</p>
+          <p className="success-subtext">Thank you for sharing.</p>
         </div>
       </div>
     )
@@ -121,31 +113,52 @@ const DonationForm = () => {
     <div className="donation-form-container">
       {/* Header */}
       <div className="form-header">
-        <h1>Share Your Surplus</h1>
-        <div className="timer">
-          <span className={timer < 15 ? 'timer-warning' : ''}>
-            {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, '0')}
-          </span>
-        </div>
+        <button 
+          className="btn-back"
+          onClick={() => window.history.back()}
+        >
+          ←
+        </button>
+        <h1>Post surplus</h1>
+        <div></div>
       </div>
 
-      {/* Photo Section */}
-      <div className="photo-section">
-        {formData.photoUrl ? (
-          <div className="photo-preview">
-            <img src={formData.photoUrl} alt="Food" />
-            <button 
-              type="button" 
-              className="btn-secondary text-sm mt-2"
-              onClick={() => setFormData(prev => ({ ...prev, photoUrl: null }))}
-            >
-              Change Photo
-            </button>
-          </div>
-        ) : (
-          <div className="camera-placeholder">
-            {showCamera ? (
-              <div className="camera-capture">
+      {/* Content */}
+      <form onSubmit={handleSubmit} className="form-content">
+        
+        {/* Title Section */}
+        <div className="scan-title-section">
+          <h2>Scan your food</h2>
+          <p>AI fills food type, quantity & tags automatically</p>
+        </div>
+
+        {/* Photo Section - MAIN FOCUS */}
+        <div className="photo-section">
+          {formData.photoUrl ? (
+            <div className="photo-preview">
+              <img src={formData.photoUrl} alt="Food" />
+              <button 
+                type="button" 
+                className="btn-change-photo"
+                onClick={() => setFormData(prev => ({ ...prev, photoUrl: null }))}
+              >
+                📷 Change photo
+              </button>
+            </div>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="btn-take-photo"
+                onClick={() => {
+                  cameraRef.current?.click()
+                }}
+              >
+                <div className="camera-icon">📷</div>
+                <div className="camera-text">
+                  <div className="camera-title">Take a photo</div>
+                  <div className="camera-subtitle">Tap here — uses your camera</div>
+                </div>
                 <input
                   type="file"
                   accept="image/*"
@@ -154,141 +167,94 @@ const DonationForm = () => {
                   ref={cameraRef}
                   style={{ display: 'none' }}
                 />
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={() => cameraRef.current?.click()}
-                >
-                  📷 Take Photo
-                </button>
-              </div>
-            ) : (
+              </button>
+              
               <button
                 type="button"
-                className="btn-primary text-lg"
-                onClick={() => setShowCamera(true)}
+                className="btn-upload-gallery"
+                onClick={() => {
+                  galleryRef.current?.click()
+                }}
               >
-                📷 Snap Food Photo
+                ⬆️ Upload from gallery
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCameraCapture}
+                  ref={galleryRef}
+                  style={{ display: 'none' }}
+                />
               </button>
-            )}
+            </>
+          )}
+          
+          {aiProcessing && (
+            <div className="ai-processing">
+              <div className="spinner">⚙️</div>
+              <span>Analyzing food...</span>
+            </div>
+          )}
+        </div>
+
+        {/* AI-Filled Info Display */}
+        {formData.foodType && (
+          <div className="info-display">
+            <div className="info-item">
+              <span className="info-label">Food</span>
+              <span className="info-value">{formData.foodType}</span>
+            </div>
+            <div className="info-divider"></div>
+            <div className="info-item">
+              <span className="info-label">Qty</span>
+              <span className="info-value">{formData.quantity}</span>
+            </div>
           </div>
         )}
-      </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="form-content">
+        {/* Error Message */}
         {error && (
           <div className="error-message">
             {error}
           </div>
         )}
 
-        {/* Food Type */}
-        <div className="form-group">
-          <label htmlFor="foodType">Food Type *</label>
-          <input
-            type="text"
-            id="foodType"
-            name="foodType"
-            className="input-field"
-            value={formData.foodType}
-            onChange={handleInputChange}
-            placeholder="e.g., Bread, Pastries, Mixed Vegetables"
-            required
-          />
-          <small className="text-gray-600">AI will auto-fill from your photo</small>
-        </div>
-
-        {/* Quantity */}
-        <div className="form-row">
-          <div className="form-group flex-1">
-            <label htmlFor="quantity">Quantity *</label>
-            <input
-              type="number"
-              id="quantity"
-              name="quantity"
-              className="input-field"
-              value={formData.quantity}
-              onChange={handleInputChange}
-              placeholder="e.g., 5"
-              required
-            />
+        {/* Location Section */}
+        <div className="location-section">
+          <div className="location-info">
+            <div className="postcode-display">
+              <span className="location-icon">📍</span>
+              <span className="postcode-value">{postcode}</span>
+            </div>
           </div>
-
-          <div className="form-group flex-1 ml-2">
-            <label htmlFor="unit">Unit</label>
-            <select
-              id="unit"
-              name="unit"
-              className="input-field"
-              value={formData.unit}
-              onChange={handleInputChange}
-            >
-              <option value="portions">Portions</option>
-              <option value="kg">Kilograms</option>
-              <option value="items">Items</option>
-              <option value="boxes">Boxes</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Description */}
-        <div className="form-group">
-          <label htmlFor="description">Description (optional)</label>
-          <textarea
-            id="description"
-            name="description"
-            className="input-field"
-            value={formData.description}
-            onChange={handleInputChange}
-            placeholder="e.g., Fresh baked this morning, gluten-free options available"
-            rows="2"
-          />
-        </div>
-
-        {/* Postcode */}
-        <div className="form-row">
-          <div className="form-group flex-1">
-            <label htmlFor="postcode">Postcode *</label>
-            <input
-              type="text"
-              id="postcode"
-              name="postcode"
-              className="input-field"
-              value={formData.postcode}
-              onChange={handleInputChange}
-              placeholder="e.g., 3000"
-              maxLength="4"
-              required
-            />
-          </div>
-
-          <div className="form-group flex-1 ml-2">
-            <label htmlFor="orgCode">Organization Code *</label>
+          
+          <div className="orgcode-input-group">
+            <label htmlFor="orgCode">Food Bank Code</label>
             <input
               type="text"
               id="orgCode"
               name="orgCode"
-              className="input-field"
+              className="input-field input-orgcode"
               value={formData.orgCode}
-              onChange={handleInputChange}
-              placeholder="e.g., ABC123"
+              onChange={(e) => setFormData(prev => ({ ...prev, orgCode: e.target.value.toUpperCase() }))}
+              placeholder="e.g., FB001"
+              maxLength="10"
               required
             />
+            <small>Ask the food bank staff for their code</small>
           </div>
         </div>
 
         {/* Submit Button */}
         <button
           type="submit"
-          className="btn-primary w-full text-lg py-3 mt-4"
-          disabled={loading}
+          className="btn-submit"
+          disabled={loading || !formData.foodType || !formData.postcode || !formData.orgCode}
         >
-          {loading ? 'Posting...' : '✓ Post Now'}
+          {loading ? '📤 Posting...' : '✓ Post Now'}
         </button>
 
-        <p className="text-center text-xs text-gray-600 mt-2">
-          No account needed. Just postcode & org code.
+        <p className="form-hint">
+          No account needed. Your location is only shared with the receiving food bank.
         </p>
       </form>
     </div>
