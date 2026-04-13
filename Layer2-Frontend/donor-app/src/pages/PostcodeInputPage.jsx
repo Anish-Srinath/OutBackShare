@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import '../styles/PostcodeInputPage.css'
 
 const PostcodeInputPage = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [postcode, setPostcode] = useState('')
 
   useEffect(() => {
@@ -20,7 +22,7 @@ const PostcodeInputPage = () => {
     if (postcode.length === 4) {
       navigate(`/feed/${postcode}`)
     } else {
-      alert('Please enter a valid 4-digit postcode')
+      alert(t('postcode.example'))
     }
   }
 
@@ -36,11 +38,11 @@ const PostcodeInputPage = () => {
             <span className="material-symbols-outlined">location_on</span>
           </div>
 
-          <div className="postcode-brand">CrisisLink</div>
+          <div className="postcode-brand">{t('appName')}</div>
 
-          <h1 className="postcode-title">Where are you located?</h1>
+          <h1 className="postcode-title">{t('postcode.title')}</h1>
           <p className="postcode-desc">
-            We'll show food available near your area — matched in real-time.
+            {t('postcode.subtitle')}
           </p>
 
           <form onSubmit={handleSubmit} className="form-group">
@@ -50,14 +52,14 @@ const PostcodeInputPage = () => {
               type="text"
               value={postcode}
               onChange={handleInputChange}
-              placeholder="3000"
+              placeholder={t('postcode.placeholder')}
               maxLength="4"
               inputMode="numeric"
               autoComplete="postal-code"
             />
 
             <button type="submit" className="submit-btn">
-              Find Food Near Me →
+              {t('postcode.button')} →
             </button>
 
             <button
@@ -65,11 +67,11 @@ const PostcodeInputPage = () => {
               className="secondary-link"
               onClick={() => navigate('/form')}
             >
-              I want to donate food instead
+              {t('home.donor.button')}
             </button>
 
             <p className="privacy-note">
-              Your location is only shared with verified food banks.
+              {t('common.secure')}
             </p>
           </form>
         </div>

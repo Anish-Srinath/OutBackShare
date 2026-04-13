@@ -1,0 +1,144 @@
+{
+  "appName": "CrisisLink",
+  "tagline": "Food relief resource coordination platform",
+
+  "home": {
+    "question": "How are you using CrisisLink today?",
+    "donor": {
+      "title": "I have food to give",
+      "description": "Post surplus food for your community",
+      "button": "Post surplus"
+    },
+    "organization": {
+      "title": "I run a community group",
+      "description": "See what is available near you",
+      "button": "View board"
+    }
+  },
+
+  "postcode": {
+    "title": "Enter your postcode",
+    "subtitle": "Help us find food near you",
+    "placeholder": "e.g., 3000",
+    "button": "Continue",
+    "example": "e.g. Postcode 3000"
+  },
+
+  "feed": {
+    "title": "Live Listings",
+    "noListings": "No listings available in your area yet",
+    "claimButton": "Claim food",
+    "claimedBy": "Claimed by",
+    "shareButton": "Share Surplus",
+    "filter": "Filter by category",
+    "search": "Search listings"
+  },
+
+  "donation": {
+    "title": "Share Surplus",
+    "subtitle": "Let AI do the heavy lifting. Just snap a photo of the food you'd like to share.",
+    "aiTitle": "AI Assisted Listing",
+    "orgTitle": "Organization Sharing",
+    "takePhoto": "Take a photo or upload one",
+    "uploadSubtitle": "we will fill in the details",
+    "changePhoto": "Change photo",
+    "analyzing": "Analysing food...",
+    "aiDetails": "AI Generated Details",
+    "foodName": "Food Name",
+    "quantity": "Estimated Quantity",
+    "category": "Category",
+    "postcode": "Your postcode",
+    "orgCode": "Food Bank Code",
+    "postButton": "Post listing - takes under 60 seconds",
+    "errors": {
+      "foodType": "Please enter a food type",
+      "quantity": "Please enter a valid quantity (must be greater than 0)",
+      "postcode": "Please enter a postcode",
+      "orgCode": "Please enter an organization code",
+      "aiTimeout": "AI recognition failed or timed out. You can still manually enter the food details.",
+      "uploadFailed": "Image upload failed"
+    },
+    "success": {
+      "title": "Posted!",
+      "donorMessage": "Your food is now visible to local food banks.",
+      "donorTag": "Thank you for sharing.",
+      "orgMessage": "Your surplus food is now available for other communities to claim.",
+      "orgTag": "Thank you for helping the network."
+    }
+  },
+
+  "orgCode": {
+    "title": "Enter Organization Code",
+    "subtitle": "Ask your food bank staff for their organization code",
+    "placeholder": "e.g., HCFB-2841",
+    "button": "Access Board",
+    "example": "Ask the food bank staff for their code"
+  },
+
+  "dashboard": {
+    "title": "Live Listing Board",
+    "noListings": "Failed to load listings. Please try again.",
+    "sharing": "Sharing excess from {{orgName}}",
+    "shareButton": "Share Excess",
+    "tabs": {
+      "all": "All",
+      "bakery": "Bakery",
+      "bakedGoods": "Baked goods",
+      "produce": "Produce",
+      "dairy": "Dairy",
+      "prepared": "Prepared",
+      "preparedMeals": "Prepared meals",
+      "grocery": "Grocery",
+      "expiringSoon": "Expiring soon"
+    }
+  },
+
+  "listing": {
+    "itemsAvailable": "{{count}} item{{count !== 1 ? 's' : ''}} available",
+    "location": "Location: ",
+    "expiresIn": "Expires in {{time}}",
+    "from": "From",
+    "postcode": "Postcode",
+    "claimingButton": "Claiming...",
+    "claimThisButton": "Claim This",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago",
+    "dietary": {
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "glutenFree": "Gluten Free",
+      "dairyFree": "Dairy Free",
+      "nonVegetarian": "Non-vegetarian"
+    },
+    "units": {
+      "portions": "portions",
+      "meals": "meals",
+      "kg": "kg",
+      "units": "units",
+      "boxes": "boxes",
+      "dozen": "dozen",
+      "litres": "litres"
+    }
+  },
+
+  "common": {
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "alerts": "Alerts",
+    "profile": "Profile",
+    "secure": "SECURE CIVIC PLATFORM • DATA ENCRYPTED"
+  },
+
+  "lang": {
+    "en": "English",
+    "zh": "中文"
+  }
+}

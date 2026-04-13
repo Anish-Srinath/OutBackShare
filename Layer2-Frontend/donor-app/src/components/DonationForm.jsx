@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { recognizeFoodFromImage, submitListing, uploadImage } from '../services/api'
 import '../styles/DonationForm.css'
 
@@ -8,15 +9,23 @@ const CATEGORIES = ['Bakery & Grains', 'Fresh Produce', 'Dairy & Eggs', 'Canned 
 const DonationForm = () => {
   const { postcode } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { t } = useTranslation()
   const fileInputRef = useRef(null)
   const selectedFileRef = useRef(null)  // holds the actual File for upload on submit
+
+  // Get org mode from location state
+  const orgMode = location.state?.orgMode || false
+  const initialOrgCode = location.state?.orgCode || ''
+  const orgName = location.state?.orgName || ''
+  const initialPostcode = location.state?.postcode || postcode || ''
 
   const [formData, setFormData] = useState({
     foodType: '',
     quantity: '',
     category: 'Bakery & Grains',
-    postcode: postcode || '',
-    orgCode: '',
+    postcode: initialPostcode,
+    orgCode: initialOrgCode,
     photoUrl: null,
     dietary_tags: [],
     name_suggestions: [],
@@ -47,7 +56,9 @@ const DonationForm = () => {
         name_suggestions: result.name_suggestions || [],
         photoUrl: URL.createObjectURL(file)
       }))
-    } catch {
+    } catch (err) {
+      console.error('AI recognition error:', err)
+      setError(t('donation.errors.aiTimeout'))
       setFormData(prev => ({
         ...prev,
         photoUrl: URL.createObjectURL(file),
@@ -64,31 +75,49 @@ const DonationForm = () => {
     setError(null)
 
     try {
-      if (!formData.foodType || !formData.quantity || !formData.postcode || !formData.orgCode) {
-        throw new Error('Please fill in all required fields')
-      }
+      console.log('Form validation:', {
+        foodType: formData.foodType,
+        quantity: formData.quantity,
+        postcode: formData.postcode,
+        orgCode: formData.orgCode,
+      })
+      
+      if (!formData.foodType) throw new Error(t('donation.errors.foodType'))
+      if (!formData.quantity || Number(formData.quantity) <= 0) throw new Error(t('donation.errors.quantity'))
+      if (!formData.postcode) throw new Error(t('donation.errors.postcode'))
+      if (!formData.orgCode) throw new Error(t('donation.errors.orgCode'))
+      
       // Upload the image first if we have one, to get a permanent URL
       let permanentPhotoUrl = null
       if (selectedFileRef.current) {
         try {
+          console.log('Starting image upload...')
           const uploadResult = await uploadImage(selectedFileRef.current)
           permanentPhotoUrl = uploadResult.url
-        } catch {
+          console.log('Image upload success:', permanentPhotoUrl)
+        } catch (err) {
           // Image upload failed — post without photo rather than blocking submission
-          console.warn('Image upload failed, submitting without photo')
+          console.warn('Image upload failed, submitting without photo:', err)
         }
       }
 
+      console.log('Submitting listing with data:', { ...formData, photoUrl: permanentPhotoUrl })
       await submitListing({ ...formData, photoUrl: permanentPhotoUrl })
+      console.log('Listing submitted successfully')
+      
       setSuccess(true)
       setFormData({
         foodType: '', quantity: '', category: 'Bakery & Grains',
-        postcode: postcode || '', orgCode: '', photoUrl: null,
+        postcode: initialPostcode, orgCode: initialOrgCode, photoUrl: null,
         dietary_tags: [], name_suggestions: [],
       })
-      // Navigate back to feed after 2 seconds so user sees their listing
+      
+      // Navigate back after 2 seconds
       setTimeout(() => {
-        if (postcode) {
+        if (orgMode) {
+          // Return to org dashboard
+          navigate('/org/dashboard', { state: { orgCode: initialOrgCode } })
+        } else if (postcode) {
           navigate(`/feed/${postcode}`)
         } else if (formData.postcode) {
           navigate(`/feed/${formData.postcode}`)
@@ -97,6 +126,7 @@ const DonationForm = () => {
         }
       }, 2000)
     } catch (err) {
+      console.error('Submit error:', err)
       setError(err.message || 'Failed to submit listing. Please try again.')
     } finally {
       setLoading(false)
@@ -110,9 +140,18 @@ const DonationForm = () => {
           <div className="success-icon">
             <span className="material-symbols-outlined">check_circle</span>
           </div>
-          <h2>Listed!</h2>
-          <p>Your food is now visible to local food banks.</p>
-          <p className="success-tag">Thank you for sharing.</p>
+          <h2>{t('donation.success.title')}</h2>
+          {orgMode ? (
+            <>
+              <p>{t('donation.success.orgMessage')}</p>
+              <p className="success-tag">{t('donation.success.orgTag')}</p>
+            </>
+          ) : (
+            <>
+              <p>{t('donation.success.donorMessage')}</p>
+              <p className="success-tag">{t('donation.success.donorTag')}</p>
+            </>
+          )}
         </div>
       </div>
     )
@@ -124,14 +163,22 @@ const DonationForm = () => {
       <header className="form-header">
         <div className="form-header-inner">
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button className="btn-back" onClick={() => postcode ? navigate(`/feed/${postcode}`) : window.history.back()}>
+            <button className="btn-back" onClick={() => {
+              if (orgMode) {
+                navigate('/org/dashboard', { state: { orgCode: initialOrgCode } })
+              } else if (postcode) {
+                navigate(`/feed/${postcode}`)
+              } else {
+                window.history.back()
+              }
+            }}>
               <span className="material-symbols-outlined">close</span>
             </button>
-            <span className="form-brand">CrisisLink</span>
+            <span className="form-brand">{t('appName')}</span>
           </div>
           <div className="form-header-badge">
             <span className="material-symbols-outlined">bolt</span>
-            AI Assisted Listing
+            {orgMode ? t('donation.orgTitle') : t('donation.aiTitle')}
           </div>
         </div>
         <div className="form-header-divider" />
@@ -142,8 +189,17 @@ const DonationForm = () => {
         <main className="form-content">
           {/* Hero */}
           <header className="form-hero">
-            <h1>Share Surplus</h1>
-            <p>Let AI do the heavy lifting. Just snap a photo of the food you'd like to share.</p>
+            {orgMode ? (
+              <>
+                <h1>{t('donation.title')}</h1>
+                <p>{orgName ? t('dashboard.sharing', { orgName: orgName }) : t('donation.subtitle')}</p>
+              </>
+            ) : (
+              <>
+                <h1>{t('donation.title')}</h1>
+                <p>{t('donation.subtitle')}</p>
+              </>
+            )}
           </header>
 
           {/* Upload / Preview */}
@@ -156,7 +212,7 @@ const DonationForm = () => {
                 onClick={() => { setFormData(prev => ({ ...prev, photoUrl: null })); fileInputRef.current.value = '' }}
               >
                 <span className="material-symbols-outlined">photo_camera</span>
-                Change photo
+                {t('donation.changePhoto')}
               </button>
             </div>
           ) : (
@@ -164,8 +220,8 @@ const DonationForm = () => {
               <div className="upload-icon-circle">
                 <span className="material-symbols-outlined">photo_camera</span>
               </div>
-              <div className="upload-title">Take a photo or upload one</div>
-              <div className="upload-subtitle">we will fill in the details</div>
+              <div className="upload-title">{t('donation.takePhoto')}</div>
+              <div className="upload-subtitle">{t('donation.uploadSubtitle')}</div>
               <input
                 ref={fileInputRef}
                 className="upload-input"
@@ -180,7 +236,7 @@ const DonationForm = () => {
           {aiProcessing && (
             <div className="ai-processing">
               <span className="material-symbols-outlined spinner-icon">settings</span>
-              Analysing food...
+              {t('donation.analyzing')}
             </div>
           )}
 
@@ -194,18 +250,18 @@ const DonationForm = () => {
                 <div className="ai-label-icon">
                   <span className="material-symbols-outlined">auto_awesome</span>
                 </div>
-                <span className="ai-label-text">AI Generated Details</span>
+                <span className="ai-label-text">{t('donation.aiDetails')}</span>
               </div>
 
               <div className="ai-fields-grid">
                 {/* Food name */}
                 <div className="ai-field full">
-                  <label className="field-label" htmlFor="foodType">Food Name</label>
+                  <label className="field-label" htmlFor="foodType">{t('donation.foodName')}</label>
                   <input
                     id="foodType"
                     className="form-input"
                     type="text"
-                    placeholder="What are you sharing?"
+                    placeholder={t('donation.foodName')}
                     value={formData.foodType}
                     onChange={e => setFormData(prev => ({ ...prev, foodType: e.target.value }))}
                   />
@@ -213,7 +269,7 @@ const DonationForm = () => {
 
                 {/* Quantity */}
                 <div className="ai-field">
-                  <label className="field-label" htmlFor="quantity">Estimated Quantity</label>
+                  <label className="field-label" htmlFor="quantity">{t('donation.quantity')}</label>
                   <input
                     id="quantity"
                     className="form-input"
@@ -226,7 +282,7 @@ const DonationForm = () => {
 
                 {/* Category */}
                 <div className="ai-field">
-                  <label className="field-label" htmlFor="category">Category</label>
+                  <label className="field-label" htmlFor="category">{t('donation.category')}</label>
                   <div className="form-select-wrapper">
                     <select
                       id="category"
@@ -257,33 +313,40 @@ const DonationForm = () => {
 
           {/* Manual fields */}
           <div className="manual-fields">
-            <div>
-              <label className="field-label muted" htmlFor="postcodeField">Your postcode</label>
-              <input
-                id="postcodeField"
-                className="form-input muted-bg"
-                style={{ maxWidth: '12rem' }}
-                type="text"
-                placeholder="e.g. 2000"
-                value={formData.postcode}
-                onChange={e => setFormData(prev => ({ ...prev, postcode: e.target.value }))}
-              />
-              <span className="field-hint">Only shared with verified recipients once accepted.</span>
-            </div>
+            {!orgMode && (
+              <div>
+                <label className="field-label muted" htmlFor="postcodeField">{t('donation.postcode')}</label>
+                <input
+                  id="postcodeField"
+                  className="form-input muted-bg"
+                  style={{ maxWidth: '12rem' }}
+                  type="text"
+                  placeholder={t('postcode.example')}
+                  value={formData.postcode}
+                  onChange={e => setFormData(prev => ({ ...prev, postcode: e.target.value }))}
+                />
+                <span className="field-hint">Only shared with verified recipients once accepted.</span>
+              </div>
+            )}
 
             <div>
-              <label className="field-label muted" htmlFor="orgCode">Food Bank Code</label>
+              <label className="field-label muted" htmlFor="orgCode">
+                {orgMode ? t('donation.orgCode') : t('donation.orgCode')}
+              </label>
               <input
                 id="orgCode"
                 className="form-input muted-bg"
                 style={{ maxWidth: '12rem' }}
                 type="text"
-                placeholder="e.g. FB001"
-                maxLength="10"
+                placeholder={orgMode ? 'Your org code' : 'e.g. FB001'}
+                maxLength="20"
                 value={formData.orgCode}
                 onChange={e => setFormData(prev => ({ ...prev, orgCode: e.target.value.toUpperCase() }))}
+                readOnly={orgMode}
               />
-              <span className="field-hint">Ask the food bank staff for their code.</span>
+              <span className="field-hint">
+                {orgMode ? 'Your organization code for this surplus posting.' : 'Ask the food bank staff for their code.'}
+              </span>
             </div>
           </div>
         </main>
@@ -296,10 +359,10 @@ const DonationForm = () => {
               className="btn-submit"
               disabled={loading || !formData.foodType || !formData.postcode || !formData.orgCode}
             >
-              {loading ? 'Posting...' : 'Post listing — takes under 60 seconds'}
+              {loading ? (orgMode ? 'Publishing...' : 'Posting...') : t('donation.postButton')}
               {!loading && <span className="material-symbols-outlined">arrow_forward</span>}
             </button>
-            <p className="form-security-note">Secure Civic Platform • Data Encrypted</p>
+            <p className="form-security-note">{t('common.secure')}</p>
           </div>
         </footer>
       </form>

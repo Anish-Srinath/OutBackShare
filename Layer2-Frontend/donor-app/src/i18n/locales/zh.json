@@ -1,0 +1,138 @@
+{
+  "appName": "CrisisLink",
+  "tagline": "食物救济资源协调平台",
+
+  "home": {
+    "question": "您今天如何使用 CrisisLink？",
+    "donor": {
+      "title": "我有剩余食物要分享",
+      "description": "为您社区发布剩余食物",
+      "button": "发布剩余"
+    },
+    "organization": {
+      "title": "我运营一个社区组织",
+      "description": "查看您附近有什么",
+      "button": "查看物品板"
+    }
+  },
+
+  "postcode": {
+    "title": "输入您的邮编",
+    "subtitle": "帮助我们找到您附近的食物",
+    "placeholder": "例如 3000",
+    "button": "继续",
+    "example": "例如 邮编 3000"
+  },
+
+  "feed": {
+    "title": "实时物品列表",
+    "noListings": "您所在地区暂无物品列表",
+    "claimButton": "领取食物",    "claimedBy": "领取人",    "shareButton": "分享剩余",
+    "filter": "按类别筛选",
+    "search": "搜索物品"
+  },
+
+  "donation": {
+    "title": "分享剩余",
+    "subtitle": "让 AI 为您承担繁重工作。只需拍摄或上传您想分享的食物照片。",
+    "aiTitle": "AI 辅助物品发布",
+    "orgTitle": "组织分享",
+    "takePhoto": "拍照或上传照片",
+    "uploadSubtitle": "我们会帮您填入详情",
+    "changePhoto": "更改照片",
+    "analyzing": "正在分析食物...",
+    "aiDetails": "AI 生成的详情",
+    "foodName": "食物名称",
+    "quantity": "估计数量",
+    "category": "类别",
+    "postcode": "您的邮编",
+    "orgCode": "食物银行代码",
+    "postButton": "发布物品 - 耗时少于 60 秒",
+    "errors": {
+      "foodType": "请输入食物类型",
+      "quantity": "请输入有效数量（必须大于 0）",
+      "postcode": "请输入邮编",
+      "orgCode": "请输入组织代码",
+      "aiTimeout": "AI 识别失败或超时。您仍可以手动输入食物详情。",
+      "uploadFailed": "图片上传失败"
+    },
+    "success": {
+      "title": "已发布！",
+      "donorMessage": "您的食物现在对当地食物银行可见。",
+      "donorTag": "感谢您的分享。",
+      "orgMessage": "您的剩余食物现在可供其他社区领取。",
+      "orgTag": "感谢您帮助网络。"
+    }
+  },
+
+  "orgCode": {
+    "title": "输入组织代码",
+    "subtitle": "向食物银行工作人员索取他们的组织代码",
+    "placeholder": "例如 HCFB-2841",
+    "button": "访问物品板",
+    "example": "向食物银行工作人员索取代码"
+  },
+
+  "dashboard": {
+    "title": "实时物品板",
+    "noListings": "无法加载物品。请重试。",
+    "sharing": "来自 {{orgName}} 的分享",
+    "shareButton": "分享剩余",
+    "tabs": {
+      "all": "全部",
+      "bakery": "烘焙食品",
+      "bakedGoods": "烘焙食品",
+      "produce": "农产品",
+      "dairy": "乳制品",
+      "prepared": "熟食",
+      "preparedMeals": "预制餐点",
+      "grocery": "杂货",
+      "expiringSoon": "即将过期"
+    }
+  },
+
+  "listing": {
+    "itemsAvailable": "{{count}} 件物品可用",    "location": "位置：",
+    "expiresIn": "{{time}}内过期",    "from": "来自",
+    "postcode": "邮编",
+    "claimingButton": "领取中...",
+    "claimThisButton": "领取",
+    "justNow": "刚才",
+    "minutesAgo": "{{count}} 分钟前",
+    "hoursAgo": "{{count}} 小时前",
+    "daysAgo": "{{count}} 天前",
+    "dietary": {
+      "vegetarian": "素食",
+      "vegan": "纯素",
+      "glutenFree": "无谷蛋白",
+      "dairyFree": "无乳制品",
+      "nonVegetarian": "非素食"
+    },
+    "units": {
+      "portions": "份",
+      "meals": "餐",
+      "kg": "公斤",
+      "units": "件",
+      "boxes": "盒",
+      "dozen": "打",
+      "litres": "升"
+    }
+  },
+
+  "common": {
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "cancel": "取消",
+    "submit": "提交",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",    "alerts": "通知",
+    "profile": "我的",    "secure": "安全民众平台 • 数据已加密"
+  },
+
+  "lang": {
+    "en": "English",
+    "zh": "中文"
+  }
+}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { getAvailableListings, claimListing } from '../services/api'
 import '../styles/LiveListingBoard.css'
 
@@ -23,23 +24,35 @@ const getCategoryEmoji = (category) => {
   return map[category] || '📦'
 }
 
-const getRelativeTime = (createdAt) => {
-  if (!createdAt) return 'Just now'
+const getTranslatedCategory = (category, t) => {
+  const map = {
+    'All': t('dashboard.tabs.all'),
+    'Bakery': t('dashboard.tabs.bakery'),
+    'Produce': t('dashboard.tabs.produce'),
+    'Prepared': t('dashboard.tabs.prepared'),
+    'Grocery': t('dashboard.tabs.grocery')
+  }
+  return map[category] || category
+}
+
+const getRelativeTime = (createdAt, t) => {
+  if (!createdAt) return t('listing.justNow')
   const created = new Date(createdAt)
   const diff = Date.now() - created.getTime()
   const minutes = Math.floor(diff / 60000)
   const hours = Math.floor(diff / 3600000)
   const days = Math.floor(diff / 86400000)
   
-  if (minutes < 1) return 'Just now'
-  if (minutes < 60) return `${minutes}m ago`
-  if (hours < 24) return `${hours}h ago`
-  return `${days}d ago`
+  if (minutes < 1) return t('listing.justNow')
+  if (minutes < 60) return t('listing.minutesAgo', { count: minutes })
+  if (hours < 24) return t('listing.hoursAgo', { count: hours })
+  return t('listing.daysAgo', { count: days })
 }
 
 const LiveListingBoard = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const { t } = useTranslation()
   const [listings, setListings] = useState([])
   const [filteredListings, setFilteredListings] = useState([])
   const [loading, setLoading] = useState(true)
@@ -51,6 +64,9 @@ const LiveListingBoard = () => {
 
   const orgCode = location.state?.orgCode || 'HCFB-2841'
   const postcode = location.state?.postcode || '3000'
+  
+  // Create category options array with indices for easy lookup
+  const categoryOptionsArray = ['All', 'Bakery', 'Produce', 'Prepared', 'Grocery']
 
   useEffect(() => {
     loadListings()
@@ -72,7 +88,7 @@ const LiveListingBoard = () => {
       }))
       setListings(formatted)
     } catch (err) {
-      setError('Failed to load listings. Please try again.')
+      setError(t('feed.noListings'))
       setListings([])
     } finally {
       setLoading(false)
@@ -82,8 +98,12 @@ const LiveListingBoard = () => {
   const filterAndDisplayListings = () => {
     let filtered = listings
     
-    if (filterCategory !== 'All') {
-      filtered = filtered.filter(l => l.category === filterCategory)
+    if (filterCategory !== 'All' && filterCategory !== t('dashboard.tabs.all')) {
+      // Handle both English and translated category names
+      const englishCategory = Object.keys(categoryOptions).find(
+        key => getTranslatedCategory(categoryOptions[key], t) === filterCategory
+      ) || filterCategory
+      filtered = filtered.filter(l => l.category === englishCategory)
     }
     
     if (searchTerm) {
@@ -105,17 +125,28 @@ const LiveListingBoard = () => {
     
     try {
       await claimListing(listingId, { orgId: orgCode })
-      setSuccess('Listing claimed successfully!')
+      setSuccess(t('feed.claimButton'))
       setTimeout(() => {
         setSuccess('')
         loadListings()
       }, 1500)
     } catch (err) {
-      setError('Failed to claim this listing. It may have been claimed already.')
+      setError(t('feed.noListings'))
       setTimeout(() => setError(''), 3000)
     } finally {
       setClaimingId(null)
     }
+  }
+
+  const handlePostExcess = () => {
+    navigate('/form', {
+      state: {
+        orgMode: true,
+        orgCode,
+        orgName: `Organization ${orgCode}`,
+        postcode,
+      },
+    })
   }
 
   return (
@@ -128,10 +159,15 @@ const LiveListingBoard = () => {
         <div className="header-info">
           <h1 className="board-title">
             <span className="material-symbols-outlined">inventory_2</span>
-            Live Inventory
+            {t('dashboard.title')}
           </h1>
           <p className="org-code-display">Code: {orgCode} | Postcode: {postcode}</p>
         </div>
+
+        <button className="post-excess-btn" onClick={handlePostExcess} title={t('dashboard.shareButton')}>
+          <span className="material-symbols-outlined">add</span>
+          {t('dashboard.shareButton')}
+        </button>
       </header>
 
       <div className="board-container">
@@ -139,7 +175,7 @@ const LiveListingBoard = () => {
         <div className="search-filter-bar">
           <input
             type="text"
-            placeholder="Search food type, donor..."
+            placeholder={t('feed.search')}
             className="search-input"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -152,7 +188,7 @@ const LiveListingBoard = () => {
                 className={`filter-tab ${filterCategory === cat ? 'active' : ''}`}
                 onClick={() => setFilterCategory(cat)}
               >
-                {cat}
+                {getTranslatedCategory(cat, t)}
               </button>
             ))}
           </div>
@@ -165,7 +201,7 @@ const LiveListingBoard = () => {
         {/* Listings Count */}
         <div className="listings-info">
           <p className="listings-count">
-            {filteredListings.length} item{filteredListings.length !== 1 ? 's' : ''} available
+            {t('listing.itemsAvailable', { count: filteredListings.length })}
           </p>
         </div>
 
@@ -173,12 +209,12 @@ const LiveListingBoard = () => {
         <div className="listings-grid">
           {loading ? (
             <div className="loading-state">
-              <p>Loading listings...</p>
+              <p>{t('common.loading')}</p>
             </div>
           ) : filteredListings.length === 0 ? (
             <div className="empty-state">
               <span className="material-symbols-outlined">inbox</span>
-              <p>No listings match your search</p>
+              <p>{t('feed.noListings')}</p>
             </div>
           ) : (
             filteredListings.map(listing => (
@@ -187,9 +223,9 @@ const LiveListingBoard = () => {
                   <span className="listing-emoji">{listing.emoji}</span>
                   <div className="listing-meta">
                     <h3 className="listing-food">{listing.foodType}</h3>
-                    <p className="listing-donor">From: {listing.orgCode || 'Community'}</p>
+                    <p className="listing-donor">{t('listing.from')}: {listing.orgCode || 'Community'}</p>
                   </div>
-                  <span className="listing-time">{getRelativeTime(listing.createdAt)}</span>
+                  <span className="listing-time">{getRelativeTime(listing.createdAt, t)}</span>
                 </div>
 
                 <div className="listing-details">
@@ -199,7 +235,7 @@ const LiveListingBoard = () => {
                   </div>
                   <div className="detail-item">
                     <span className="material-symbols-outlined">location_on</span>
-                    <span>Postcode {listing.postcode}</span>
+                    <span>{t('listing.postcode')} {listing.postcode}</span>
                   </div>
                 </div>
 
@@ -220,7 +256,7 @@ const LiveListingBoard = () => {
                   onClick={() => handleClaim(listing.id)}
                   disabled={claimingId === listing.id}
                 >
-                  {claimingId === listing.id ? 'Claiming...' : 'Claim This →'}
+                  {claimingId === listing.id ? t('listing.claimingButton') : t('listing.claimThisButton')} →
                 </button>
               </div>
             ))

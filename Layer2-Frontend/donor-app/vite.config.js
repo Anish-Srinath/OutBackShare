@@ -4,12 +4,14 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3001,
+    port: 3004,
+    strictPort: false,
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        rewrite: (path) => path.replace(/^\/api/, ''),
+        logLevel: 'debug'
       },
       '/static': {
         target: 'http://localhost:8000',

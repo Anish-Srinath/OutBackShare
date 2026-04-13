@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import '../styles/OrgCodeInputPage.css'
 
 const OrgCodeInputPage = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [orgCode, setOrgCode] = useState('')
   const [error, setError] = useState('')
 
@@ -22,7 +24,7 @@ const OrgCodeInputPage = () => {
     if (orgCode.trim()) {
       navigate('/org/dashboard', { state: { orgCode } })
     } else {
-      setError('Please enter your organisation code to continue')
+      setError(t('orgCode.example'))
     }
   }
 
@@ -38,11 +40,11 @@ const OrgCodeInputPage = () => {
             <span className="material-symbols-outlined">business</span>
           </div>
 
-          <div className="org-code-brand">CrisisLink</div>
+          <div className="org-code-brand">{t('appName')}</div>
 
-          <h1 className="org-code-title">Organisation code</h1>
+          <h1 className="org-code-title">{t('orgCode.title')}</h1>
           <p className="org-code-desc">
-            Enter your unique code issued with your FoodSafe registration. You'll access your live inventory dashboard immediately.
+            {t('orgCode.subtitle')}
           </p>
 
           <form onSubmit={handleSubmit} className="form-group">
@@ -52,7 +54,7 @@ const OrgCodeInputPage = () => {
               type="text"
               value={orgCode}
               onChange={handleInputChange}
-              placeholder="HCFB-2841"
+              placeholder={t('orgCode.placeholder')}
               maxLength="20"
               autoComplete="off"
             />
@@ -60,7 +62,7 @@ const OrgCodeInputPage = () => {
             {error && <div className="error-message">{error}</div>}
 
             <button type="submit" className="submit-btn">
-              Access Dashboard →
+              {t('orgCode.button')} →
             </button>
 
             <button
@@ -68,11 +70,11 @@ const OrgCodeInputPage = () => {
               className="secondary-link"
               onClick={() => navigate('/')}
             >
-              Back to home
+              {t('common.back')}
             </button>
 
             <p className="privacy-note">
-              Your code grants secure access to your organization's dashboard.
+              {t('common.secure')}
             </p>
           </form>
         </div>

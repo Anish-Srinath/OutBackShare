@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 import '../styles/PostFeedPage.css'
 
@@ -24,13 +25,35 @@ const getIcon = (name = '') => {
 
 const FILTER_CATEGORIES = ['All', 'Baked goods', 'Produce', 'Dairy', 'Prepared meals', 'Expiring soon']
 
+const getRelativeTime = (createdAt, t) => {
+  if (!createdAt) return t('listing.justNow')
+  const created = new Date(createdAt)
+  const diff = Date.now() - created.getTime()
+  const minutes = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days = Math.floor(diff / 86400000)
+  
+  if (minutes < 1) return t('listing.justNow')
+  if (minutes < 60) return t('listing.minutesAgo', { count: minutes })
+  if (hours < 24) return t('listing.hoursAgo', { count: hours })
+  return t('listing.daysAgo', { count: days })
+}
+
 const PostFeedPage = () => {
   const { postcode } = useParams()
   const navigate = useNavigate()
+  const { t, i18n } = useTranslation()
   const [activeFilter, setActiveFilter] = useState('All')
   const [search, setSearch] = useState('')
   const [listings, setListings] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false)
+
+  const handleLanguageChange = (lang) => {
+    i18n.changeLanguage(lang)
+    localStorage.setItem('preferredLanguage', lang)
+    setShowLanguageMenu(false)
+  }
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -111,12 +134,68 @@ const PostFeedPage = () => {
       {/* Top Navbar */}
       <header className="navbar">
         <div className="navbar-inner">
-          <div className="nav-brand">CrisisLink</div>
-          <div className="nav-center">Location: {postcode}</div>
+          <div className="nav-brand">{t('appName')}</div>
+          <div className="nav-center">{t('listing.location', 'Location:')} {postcode}</div>
           <div className="nav-actions">
-            <button className="nav-icon-btn" title="Language">
-              <span className="material-symbols-outlined">language</span>
-            </button>
+            <div className="language-btn-wrapper" style={{ position: 'relative' }}>
+              <button 
+                className="nav-icon-btn" 
+                title="Change language"
+                onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+              >
+                <span className="material-symbols-outlined">language</span>
+              </button>
+              {showLanguageMenu && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  backgroundColor: 'white',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  minWidth: '120px',
+                  marginTop: '8px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  zIndex: 1000
+                }}>
+                  <button 
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: 'none',
+                      background: i18n.language === 'en' ? '#f0f0f0' : 'white',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: i18n.language === 'en' ? '600' : '400',
+                      color: i18n.language === 'en' ? '#006B4C' : '#333',
+                      borderBottom: '1px solid #eee'
+                    }}
+                    onClick={() => handleLanguageChange('en')}
+                  >
+                    English
+                  </button>
+                  <button 
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: 'none',
+                      background: i18n.language === 'zh' ? '#f0f0f0' : 'white',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: i18n.language === 'zh' ? '600' : '400',
+                      color: i18n.language === 'zh' ? '#006B4C' : '#333'
+                    }}
+                    onClick={() => handleLanguageChange('zh')}
+                  >
+                    中文
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className="navbar-divider" />
@@ -125,9 +204,9 @@ const PostFeedPage = () => {
       <main className="feed-content">
         {/* Board heading */}
         <div className="board-header">
-          <h1 className="board-title">Live Food Board</h1>
+          <h1 className="board-title">{t('feed.title')}</h1>
           <p className="board-subtitle">
-            Connecting surplus nourishment with regional community hubs in real-time.
+            {t('postcode.subtitle')}
           </p>
         </div>
 
@@ -138,21 +217,33 @@ const PostFeedPage = () => {
             <input
               className="search-input"
               type="text"
-              placeholder="Search available food..."
+              placeholder={t('feed.search')}
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
           <div className="filter-chips">
-            {FILTER_CATEGORIES.map(f => (
-              <button
-                key={f}
-                className={`filter-chip${activeFilter === f ? ' active' : ''}${f === 'Expiring soon' ? ' expiring' : ''}`}
-                onClick={() => setActiveFilter(f)}
-              >
-                {f}
-              </button>
-            ))}
+            {FILTER_CATEGORIES.map(f => {
+              // Convert category filter to a key for translation
+              const filterKeyMap = {
+                'All': 'all',
+                'Baked goods': 'bakedGoods',
+                'Produce': 'produce',
+                'Dairy': 'dairy',
+                'Prepared meals': 'preparedMeals',
+                'Expiring soon': 'expiringSoon'
+              };
+              const transKey = filterKeyMap[f] || f;
+              return (
+                <button
+                  key={f}
+                  className={`filter-chip${activeFilter === f ? ' active' : ''}${f === 'Expiring soon' ? ' expiring' : ''}`}
+                  onClick={() => setActiveFilter(f)}
+                >
+                  {t(`dashboard.tabs.${transKey}`, f)}
+                </button>
+              );
+            })}
           </div>
         </section>
 
@@ -161,12 +252,12 @@ const PostFeedPage = () => {
           {loading ? (
             <div className="empty-state">
               <div className="empty-state-icon">⏳</div>
-              <p>Loading listings...</p>
+              <p>{t('common.loading')}</p>
             </div>
           ) : filtered.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">🍽️</div>
-              <h3>No listings found</h3>
+              <h3>{t('feed.noListings')}</h3>
               <p>Be the first to post surplus food in {postcode}.</p>
             </div>
           ) : (
@@ -193,7 +284,7 @@ const PostFeedPage = () => {
                       <div className="food-card-hero-fade" />
                       {/* Qty badge pinned to top-right of image */}
                       <span className={`food-qty-badge food-qty-badge--on-hero${isClaimed ? ' claimed' : ''}`}>
-                        ~{l.quantity} {l.unit}
+                        ~{l.quantity} {t(`listing.units.${l.unit}`, l.unit)}
                       </span>
                       {/* Category icon bottom-left of image */}
                       <div className="food-card-hero-icon">
@@ -207,7 +298,7 @@ const PostFeedPage = () => {
                         <span className="material-symbols-outlined">{getIcon(l.foodType)}</span>
                       </div>
                       <span className={`food-qty-badge${isClaimed ? ' claimed' : ''}`}>
-                        ~{l.quantity} {l.unit}
+                        ~{l.quantity} {t(`listing.units.${l.unit}`, l.unit)}
                       </span>
                     </div>
                   )}
@@ -225,12 +316,12 @@ const PostFeedPage = () => {
                       {isClaimed ? (
                         <div className="food-meta-row claimed-by">
                           <span className="material-symbols-outlined">check_circle</span>
-                          Claimed{l.claimedBy ? ` by ${l.claimedBy}` : ''}
+                          {t('feed.claimedBy', 'Claimed')}{l.claimedBy ? ` ${l.claimedBy}` : ''}
                         </div>
                       ) : (
                         <div className="food-meta-row expiry">
                           <span className="material-symbols-outlined">schedule</span>
-                          Expires in {l.expiresIn || '–'}
+                          {t('listing.expiresIn', { time: l.expiresIn || '–' })}
                         </div>
                       )}
                       <div className="food-meta-row location">
@@ -244,14 +335,14 @@ const PostFeedPage = () => {
                   <div className="food-card-actions">
                     {isClaimed ? (
                       <button className="claim-btn claim-btn--disabled" disabled>
-                        Claimed
+                        {t('common.success')}
                       </button>
                     ) : (
                       <button
                         className="claim-btn"
                         onClick={() => handleClaim(l.id)}
                       >
-                        Claim
+                        {t('feed.claimButton')}
                       </button>
                     )}
                   </div>
@@ -272,19 +363,19 @@ const PostFeedPage = () => {
         <button className="nav-tab active">
           <span className="material-symbols-outlined"
             style={{ fontVariationSettings: "'FILL' 1" }}>grid_view</span>
-          <span className="nav-tab-label">Feed</span>
+          <span className="nav-tab-label">{t('feed.title')}</span>
         </button>
         <button className="nav-tab" onClick={() => navigate(`/form/${postcode}`)}>
           <span className="material-symbols-outlined">add_circle</span>
-          <span className="nav-tab-label">Post</span>
+          <span className="nav-tab-label">{t('home.donor.button')}</span>
         </button>
         <button className="nav-tab">
           <span className="material-symbols-outlined">notifications</span>
-          <span className="nav-tab-label">Alerts</span>
+          <span className="nav-tab-label">{t('common.alerts', 'Alerts')}</span>
         </button>
         <button className="nav-tab">
           <span className="material-symbols-outlined">person</span>
-          <span className="nav-tab-label">Profile</span>
+          <span className="nav-tab-label">{t('common.profile', 'Profile')}</span>
         </button>
       </nav>
     </div>
