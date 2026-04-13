@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import '../styles/PostcodeInputPage.css'
 
 const PostcodeInputPage = () => {
@@ -26,61 +26,51 @@ const PostcodeInputPage = () => {
 
   return (
     <div className="postcode-page">
-      {/* Header */}
-      <header className="postcode-header">
-        <button 
-          onClick={() => navigate('/')}
-          className="back-link"
-        >
-          ← Back
-        </button>
+      <button className="back-link" onClick={() => navigate('/')}>
+        <span className="material-symbols-outlined">arrow_back</span>
+      </button>
 
-        <div className="logo-section">
-          <div className="logo">🥬</div>
-          <div className="logo-text">CrisisLink</div>
-        </div>
-
-        <div className="tagline">
-          Move surplus food to the people<br />
-          who need it most — in seconds
-        </div>
-
-        <div className="stats">
-          <div className="stat-item">
-            <div className="stat-dot"></div>
-            <div className="stat-text"><strong>2,841 meals saved</strong> this week</div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-text"><strong>94 donors</strong> · <strong>31 food banks</strong></div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Card */}
       <main className="postcode-main">
-        <div className="card">
-          <div className="card-icon">📍</div>
-          
-          <h1 className="card-title">What's your postcode?</h1>
-          <p className="card-description">So we can show nearby food banks</p>
+        <div className="postcode-card">
+          <div className="postcode-icon-circle">
+            <span className="material-symbols-outlined">location_on</span>
+          </div>
+
+          <div className="postcode-brand">CrisisLink</div>
+
+          <h1 className="postcode-title">Where are you located?</h1>
+          <p className="postcode-desc">
+            We'll show food available near your area — matched in real-time.
+          </p>
 
           <form onSubmit={handleSubmit} className="form-group">
-            <div className="input-wrapper">
-              <input 
-                id="postcode-input"
-                type="text" 
-                value={postcode}
-                onChange={handleInputChange}
-                placeholder="3000"
-                maxLength="4"
-                inputMode="numeric"
-                autoComplete="postal-code"
-              />
-            </div>
+            <input
+              id="postcode-input"
+              className="postcode-input"
+              type="text"
+              value={postcode}
+              onChange={handleInputChange}
+              placeholder="3000"
+              maxLength="4"
+              inputMode="numeric"
+              autoComplete="postal-code"
+            />
 
             <button type="submit" className="submit-btn">
-              Post surplus
+              Find Food Near Me →
             </button>
+
+            <button
+              type="button"
+              className="secondary-link"
+              onClick={() => navigate('/form')}
+            >
+              I want to donate food instead
+            </button>
+
+            <p className="privacy-note">
+              Your location is only shared with verified food banks.
+            </p>
           </form>
         </div>
       </main>

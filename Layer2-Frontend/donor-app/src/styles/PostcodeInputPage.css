@@ -1,180 +1,169 @@
-/* PostcodeInputPage Styles */
+/* ── PostcodeInputPage.css ────────────────────────────────── */
+
 .postcode-page {
+  min-height: 100vh;
+  background: var(--bg);
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-}
-
-.postcode-header {
+  align-items: center;
+  justify-content: center;
   padding: 2rem 1.5rem;
-  text-align: center;
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: white;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   position: relative;
 }
 
+/* ── Back button ──────────────────────────────────────────── */
 .back-link {
   position: absolute;
-  left: 1.5rem;
   top: 1.5rem;
+  left: 1.5rem;
   background: none;
   border: none;
-  color: white;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.2s;
-  padding: 0.5rem;
-}
-
-.back-link:hover {
-  opacity: 0.8;
-}
-
-.postcode-header .logo-section {
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.postcode-header .logo {
-  font-size: 2rem;
+.back-link:hover { background: var(--surface-low); }
+
+/* ── Card ─────────────────────────────────────────────────── */
+.postcode-main {
+  width: 100%;
+  max-width: 440px;
 }
 
-.postcode-header .logo-text {
-  font-size: 1.5rem;
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-
-.postcode-header .tagline {
-  font-size: 1.125rem;
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-  font-weight: 500;
-}
-
-.postcode-header .stats {
+.postcode-card {
+  background: var(--surface-container-lowest);
+  border-radius: var(--radius-xl);
+  padding: 3rem 2rem;
+  box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  font-size: 0.9rem;
-}
-
-.postcode-header .stat-item {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.postcode-header .stat-dot {
-  width: 6px;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: 50%;
-}
-
-.postcode-header .stat-text {
-  opacity: 0.95;
-}
-
-.postcode-main {
-  flex: 1;
-  padding: 2rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.postcode-main .card {
-  background: white;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 340px;
   text-align: center;
+  gap: 0.75rem;
 }
 
-.postcode-main .card-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.postcode-main .card-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
+/* ── Brand ────────────────────────────────────────────────── */
+.postcode-brand {
+  font-family: var(--font-headline);
+  font-weight: 900;
+  font-size: 1.75rem;
+  letter-spacing: -0.03em;
+  color: var(--primary);
   margin-bottom: 0.5rem;
 }
 
-.postcode-main .card-description {
-  font-size: 0.95rem;
-  color: #6b7280;
-  margin-bottom: 1.5rem;
+.postcode-icon-circle {
+  width: 4rem;
+  height: 4rem;
+  background: var(--primary-fixed);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
 }
 
+.postcode-icon-circle .material-symbols-outlined {
+  font-size: 2rem;
+  color: var(--on-primary-fixed);
+}
+
+/* ── Text ─────────────────────────────────────────────────── */
+.postcode-title {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--on-surface);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.25rem;
+}
+
+.postcode-desc {
+  color: var(--on-surface-variant);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Form ─────────────────────────────────────────────────── */
 .form-group {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  margin-top: 0.5rem;
 }
 
-.input-wrapper {
-  position: relative;
-}
-
-.input-wrapper input {
+.postcode-input {
   width: 100%;
-  font-size: 1.125rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 0.75rem;
+  background: var(--surface-container-high);
+  border: none;
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  font-family: var(--font-headline);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
   text-align: center;
-  transition: border-color 0.2s;
-  font-weight: 600;
-  letter-spacing: 2px;
+  color: var(--on-surface);
+  transition: box-shadow 0.2s;
 }
 
-.input-wrapper input:focus {
-  outline: none;
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+.postcode-input::placeholder {
+  color: var(--outline);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  font-size: 1.1rem;
 }
 
-.input-wrapper input::placeholder {
-  color: #d1d5db;
-  letter-spacing: 2px;
+.postcode-input:focus {
+  box-shadow: 0 0 0 2px rgba(0, 105, 76, 0.3);
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.875rem;
+  width: 100%;
+  padding: 1.1rem;
+  background: var(--primary);
+  color: var(--on-primary);
+  border-radius: var(--radius-full);
+  font-family: var(--font-headline);
+  font-weight: 700;
   font-size: 1rem;
-  font-weight: 600;
+  border: none;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+  transition: filter 0.15s, transform 0.15s;
+  box-shadow: var(--shadow-float);
 }
 
-.submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);
+.submit-btn:hover { filter: brightness(0.9); }
+.submit-btn:active { transform: scale(0.98); }
+
+/* ── Secondary link ───────────────────────────────────────── */
+.secondary-link {
+  background: none;
+  border: none;
+  color: var(--on-surface-variant);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s;
 }
 
-.submit-btn:active {
-  transform: translateY(0);
-}
+.secondary-link:hover { color: var(--primary); }
 
-.submit-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* ── Privacy note ─────────────────────────────────────────── */
+.privacy-note {
+  font-size: 0.75rem;
+  color: var(--outline);
+  line-height: 1.5;
 }

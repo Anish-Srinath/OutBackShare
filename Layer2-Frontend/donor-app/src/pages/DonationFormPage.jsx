@@ -1,31 +1,8 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
 import DonationForm from '../components/DonationForm'
-import '../styles/DonationFormPage.css'
 
-const DonationFormPage = () => {
-  const navigate = useNavigate()
-
-  return (
-    <div className="donation-form-page">
-      {/* Header */}
-      <header className="form-header">
-        <button 
-          onClick={() => navigate(-1)}
-          className="back-btn"
-        >
-          ← Back
-        </button>
-        <h1>Post Surplus Food</h1>
-        <div></div>
-      </header>
-
-      {/* Main Form */}
-      <div className="form-container">
-        <DonationForm />
-      </div>
-    </div>
-  )
-}
+// DonationFormPage is now just a thin wrapper.
+// DonationForm handles its own header, layout, and navigation.
+const DonationFormPage = () => <DonationForm />
 
 export default DonationFormPage

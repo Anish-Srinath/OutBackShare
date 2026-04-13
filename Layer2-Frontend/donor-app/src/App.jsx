@@ -18,6 +18,9 @@ function App() {
         {/* Donor flow: postcode -> feed -> form */}
         <Route path="/postcode" element={<PostcodeInputPage />} />
         <Route path="/feed/:postcode" element={<PostFeedPage />} />
+
+        {/* Form with optional postcode param so we can redirect back to feed */}
+        <Route path="/form/:postcode" element={<DonationFormPage />} />
         <Route path="/form" element={<DonationFormPage />} />
 
         {/* Catch all - redirect to home */}

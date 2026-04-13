@@ -14,13 +14,30 @@ const apiClient = axios.create({
 export const recognizeFoodFromImage = async (imageFormData) => {
   try {
     const response = await apiClient.post('/image-recognition/recognize', imageFormData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
     })
     return response.data
   } catch (error) {
     console.error('Image recognition error:', error)
+    throw error
+  }
+}
+
+/**
+ * Upload a food image and get back a permanent server-side URL.
+ * @param {File} file - The image file to upload
+ * @returns {Promise<{url: string}>}
+ */
+export const uploadImage = async (file) => {
+  try {
+    const fd = new FormData()
+    fd.append('image', file)
+    const response = await apiClient.post('/upload', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data // { url: '/static/uuid.jpg' }
+  } catch (error) {
+    console.error('Image upload error:', error)
     throw error
   }
 }
