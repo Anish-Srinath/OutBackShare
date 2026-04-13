@@ -36,7 +36,7 @@ const HomePage = () => {
           </div>
 
           {/* Org / community card */}
-          <div className="role-card" onClick={() => navigate('/postcode')}>
+          <div className="role-card" onClick={() => navigate('/org/code')}>
             <div className="role-card-accent org" />
             <div className="role-card-inner">
               <div className="role-icon-circle org">
@@ -46,7 +46,7 @@ const HomePage = () => {
               <p className="role-card-desc">See what is available near you</p>
               <button
                 className="role-btn org"
-                onClick={(e) => { e.stopPropagation(); navigate('/postcode') }}
+                onClick={(e) => { e.stopPropagation(); navigate('/org/code') }}
               >
                 View board
               </button>
