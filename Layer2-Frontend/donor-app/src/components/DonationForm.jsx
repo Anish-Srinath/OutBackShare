@@ -1,10 +1,23 @@
 import React, { useState, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { recognizeFoodFromImage, submitListing, uploadImage } from '../services/api'
+import { recognizeFoodFromImage, submitListing, uploadImage, expireListing } from '../services/api'
+import LanguageSwitcher from './LanguageSwitcher'
 import '../styles/DonationForm.css'
 
-const CATEGORIES = ['Bakery & Grains', 'Fresh Produce', 'Dairy & Eggs', 'Canned Goods', 'Prepared Meals', 'Other']
+const CATEGORIES = ['bakedGoods', 'produce', 'dairy', 'pantry', 'preparedMeals', 'other']
+const SIZE_CUES = ['small', 'medium', 'large', 'heavy', 'extraHeavy']
+
+const normalizeCategoryValue = (value = '') => {
+  const lower = String(value).toLowerCase()
+  if (['bakedgoods', 'baked goods', 'bakery & grains', 'bakery'].includes(lower)) return 'bakedGoods'
+  if (['produce', 'fresh produce'].includes(lower)) return 'produce'
+  if (['dairy', 'dairy & eggs'].includes(lower)) return 'dairy'
+  if (['pantry', 'canned goods'].includes(lower)) return 'pantry'
+  if (['preparedmeals', 'prepared meals', 'prepared'].includes(lower)) return 'preparedMeals'
+  if (lower === 'other') return 'other'
+  return 'bakedGoods'
+}
 
 const DonationForm = () => {
   const { postcode } = useParams()
@@ -19,15 +32,18 @@ const DonationForm = () => {
   const initialOrgCode = location.state?.orgCode || ''
   const orgName = location.state?.orgName || ''
   const initialPostcode = location.state?.postcode || postcode || ''
+  const draftListing = location.state?.draftListing || null
+  const replaceListingId = location.state?.replaceListingId || null
 
   const [formData, setFormData] = useState({
-    foodType: '',
-    quantity: '',
-    category: 'Bakery & Grains',
+    foodType: draftListing?.foodType || '',
+    quantity: draftListing?.quantity != null ? String(draftListing.quantity) : '',
+    category: normalizeCategoryValue(draftListing?.category || 'bakedGoods'),
+    sizeCue: draftListing?.sizeCue || '',
     postcode: initialPostcode,
     orgCode: initialOrgCode,
-    photoUrl: null,
-    dietary_tags: [],
+    photoUrl: draftListing?.photoUrl || null,
+    dietary_tags: draftListing?.dietary_tags || [],
     name_suggestions: [],
   })
 
@@ -35,12 +51,33 @@ const DonationForm = () => {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
   const [aiProcessing, setAiProcessing] = useState(false)
+  const [hasPhotoSelection, setHasPhotoSelection] = useState(Boolean(draftListing?.photoUrl))
+  const [editingListingId, setEditingListingId] = useState(replaceListingId)
+  const [lastSubmittedDraft, setLastSubmittedDraft] = useState(null)
+  const donorGeneratedCode = `DONOR-${(formData.postcode || initialPostcode || 'GUEST').toUpperCase()}`
+
+  const handleReturnToPrimary = () => {
+    if (orgMode) {
+      navigate('/org/dashboard', { state: { orgCode: initialOrgCode, postcode: initialPostcode } })
+      return
+    }
+    if (postcode) {
+      navigate(`/feed/${postcode}`)
+      return
+    }
+    if (formData.postcode) {
+      navigate(`/feed/${formData.postcode}`)
+      return
+    }
+    navigate('/')
+  }
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
 
     selectedFileRef.current = file  // keep a reference for upload on submit
+    setHasPhotoSelection(true)
     setAiProcessing(true)
     setError(null)
 
@@ -52,6 +89,7 @@ const DonationForm = () => {
         ...prev,
         foodType: result.name || 'Unknown Food',
         quantity: result.quantity != null ? String(result.quantity) : '',
+        sizeCue: prev.sizeCue,
         dietary_tags: result.dietary_tags || [],
         name_suggestions: result.name_suggestions || [],
         photoUrl: URL.createObjectURL(file)
@@ -79,13 +117,19 @@ const DonationForm = () => {
         foodType: formData.foodType,
         quantity: formData.quantity,
         postcode: formData.postcode,
-        orgCode: formData.orgCode,
+        orgCode: orgMode ? formData.orgCode : donorGeneratedCode,
       })
       
       if (!formData.foodType) throw new Error(t('donation.errors.foodType'))
       if (!formData.quantity || Number(formData.quantity) <= 0) throw new Error(t('donation.errors.quantity'))
       if (!formData.postcode) throw new Error(t('donation.errors.postcode'))
-      if (!formData.orgCode) throw new Error(t('donation.errors.orgCode'))
+      if (orgMode && !formData.orgCode) throw new Error(t('donation.errors.orgCode'))
+      const draftPayload = {
+        ...formData,
+        postcode: formData.postcode,
+        orgCode: orgMode ? formData.orgCode : donorGeneratedCode,
+      }
+      setLastSubmittedDraft(draftPayload)
       
       // Upload the image first if we have one, to get a permanent URL
       let permanentPhotoUrl = null
@@ -101,33 +145,76 @@ const DonationForm = () => {
         }
       }
 
-      console.log('Submitting listing with data:', { ...formData, photoUrl: permanentPhotoUrl })
-      await submitListing({ ...formData, photoUrl: permanentPhotoUrl })
+      const submissionPayload = {
+        ...formData,
+        orgCode: orgMode ? formData.orgCode : donorGeneratedCode,
+        photoUrl: permanentPhotoUrl,
+        description: formData.description || null,
+      }
+      console.log('Submitting listing with data:', submissionPayload)
+      const createdListing = await submitListing(submissionPayload)
       console.log('Listing submitted successfully')
+
+      if (editingListingId) {
+        try {
+          await expireListing(editingListingId)
+        } catch (expireError) {
+          console.warn('Previous listing could not be expired after replacement:', expireError)
+        }
+      }
       
       setSuccess(true)
       setFormData({
-        foodType: '', quantity: '', category: 'Bakery & Grains',
+        foodType: '', quantity: '', category: 'bakedGoods',
+        sizeCue: '',
         postcode: initialPostcode, orgCode: initialOrgCode, photoUrl: null,
         dietary_tags: [], name_suggestions: [],
       })
-      
-      // Navigate back after 2 seconds
-      setTimeout(() => {
-        if (orgMode) {
-          // Return to org dashboard
-          navigate('/org/dashboard', { state: { orgCode: initialOrgCode } })
-        } else if (postcode) {
-          navigate(`/feed/${postcode}`)
-        } else if (formData.postcode) {
-          navigate(`/feed/${formData.postcode}`)
-        } else {
-          setSuccess(false)
-        }
-      }, 2000)
+      setHasPhotoSelection(false)
+      setEditingListingId(createdListing?.id || null)
     } catch (err) {
       console.error('Submit error:', err)
       setError(err.message || 'Failed to submit listing. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const showAiDetails = Boolean(
+    hasPhotoSelection ||
+    aiProcessing ||
+    formData.photoUrl ||
+    formData.foodType ||
+    formData.quantity ||
+    formData.dietary_tags.length
+  )
+
+  const handleEditSubmittedListing = () => {
+    if (!lastSubmittedDraft) return
+    setFormData(prev => ({
+      ...prev,
+      ...lastSubmittedDraft,
+      quantity: lastSubmittedDraft.quantity != null ? String(lastSubmittedDraft.quantity) : '',
+      photoUrl: lastSubmittedDraft.photoUrl || prev.photoUrl,
+      dietary_tags: lastSubmittedDraft.dietary_tags || [],
+      name_suggestions: prev.name_suggestions || [],
+    }))
+    setHasPhotoSelection(Boolean(lastSubmittedDraft.photoUrl || selectedFileRef.current))
+    setSuccess(false)
+    setError(null)
+  }
+
+  const handleDeleteListing = async () => {
+    if (!editingListingId) return
+    setLoading(true)
+    setError(null)
+    try {
+      await expireListing(editingListingId)
+      setSuccess(false)
+      handleReturnToPrimary()
+    } catch (err) {
+      console.error('Delete listing error:', err)
+      setError(t('donation.errors.deleteFailed'))
     } finally {
       setLoading(false)
     }
@@ -152,6 +239,38 @@ const DonationForm = () => {
               <p className="success-tag">{t('donation.success.donorTag')}</p>
             </>
           )}
+          <div className="success-actions">
+            <button
+              type="button"
+              className="success-btn success-btn-primary"
+              onClick={() => navigate('/')}
+            >
+              {t('common.home')}
+            </button>
+            <button
+              type="button"
+              className="success-btn success-btn-secondary"
+              onClick={handleReturnToPrimary}
+            >
+              {orgMode ? t('donation.success.backToDashboard') : t('donation.success.backToListings')}
+            </button>
+            <button
+              type="button"
+              className="success-btn success-btn-secondary"
+              onClick={handleEditSubmittedListing}
+            >
+              {t('donation.success.editListing')}
+            </button>
+            {editingListingId && (
+              <button
+                type="button"
+                className="success-btn success-btn-danger"
+                onClick={handleDeleteListing}
+              >
+                {t('donation.success.deleteListing')}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     )
@@ -176,16 +295,26 @@ const DonationForm = () => {
             </button>
             <span className="form-brand">{t('appName')}</span>
           </div>
-          <div className="form-header-badge">
-            <span className="material-symbols-outlined">bolt</span>
-            {orgMode ? t('donation.orgTitle') : t('donation.aiTitle')}
+          <div className="form-header-meta">
+            <LanguageSwitcher />
+            <div className="form-header-badge">
+              <span className="material-symbols-outlined">bolt</span>
+              {orgMode ? t('donation.orgTitle') : t('donation.aiTitle')}
+            </div>
           </div>
         </div>
         <div className="form-header-divider" />
       </header>
 
       {/* Main form */}
-      <form onSubmit={handleSubmit}>
+      <form
+        onSubmit={handleSubmit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.type !== 'submit') {
+            e.preventDefault()
+          }
+        }}
+      >
         <main className="form-content">
           {/* Hero */}
           <header className="form-hero">
@@ -216,21 +345,39 @@ const DonationForm = () => {
               </button>
             </div>
           ) : (
-            <label className="upload-area">
-              <div className="upload-icon-circle">
-                <span className="material-symbols-outlined">photo_camera</span>
-              </div>
-              <div className="upload-title">{t('donation.takePhoto')}</div>
-              <div className="upload-subtitle">{t('donation.uploadSubtitle')}</div>
+            <>
+              <button
+                type="button"
+                className="upload-area"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <div className="upload-icon-circle">
+                  <span className="material-symbols-outlined">photo_camera</span>
+                </div>
+                <div className="upload-title">{t('donation.takePhoto')}</div>
+                <div className="upload-subtitle">{t('donation.uploadSubtitle')}</div>
+              </button>
               <input
                 ref={fileInputRef}
-                className="upload-input"
+                className="upload-input-hidden"
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
+                tabIndex={-1}
               />
-            </label>
+            </>
           )}
+
+          <div className="guidance-card">
+            <strong>{t('donation.guidanceTitle')}</strong>
+            <ul className="guidance-list">
+              <li>{t('donation.guidancePoints.fullItem')}</li>
+              <li>{t('donation.guidancePoints.centered')}</li>
+              <li>{t('donation.guidancePoints.lighting')}</li>
+              <li>{t('donation.guidancePoints.quantityCue')}</li>
+            </ul>
+            <p className="guidance-note">{t('donation.reviewNotice')}</p>
+          </div>
 
           {/* AI processing */}
           {aiProcessing && (
@@ -241,7 +388,7 @@ const DonationForm = () => {
           )}
 
           {/* AI Result Card */}
-          {formData.foodType && (
+          {showAiDetails && (
             <div className="ai-result-card">
               <div className="ai-result-bg-icon">
                 <span className="material-symbols-outlined">auto_awesome</span>
@@ -280,6 +427,27 @@ const DonationForm = () => {
                   />
                 </div>
 
+                <div className="ai-field">
+                  <label className="field-label" htmlFor="sizeCue">{t('donation.sizeCue')}</label>
+                  <div className="form-select-wrapper">
+                    <select
+                      id="sizeCue"
+                      className="form-select"
+                      value={formData.sizeCue}
+                      onChange={e => setFormData(prev => ({ ...prev, sizeCue: e.target.value }))}
+                    >
+                      <option value="">{t('donation.sizeCuePlaceholder')}</option>
+                      {SIZE_CUES.map(option => (
+                        <option key={option} value={option}>
+                          {t(`donation.sizeCueOptions.${option}`)}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="material-symbols-outlined select-arrow">expand_more</span>
+                  </div>
+                  <span className="field-hint ai-field-hint">{t('donation.quantityHint')}</span>
+                </div>
+
                 {/* Category */}
                 <div className="ai-field">
                   <label className="field-label" htmlFor="category">{t('donation.category')}</label>
@@ -290,7 +458,11 @@ const DonationForm = () => {
                       value={formData.category}
                       onChange={e => setFormData(prev => ({ ...prev, category: e.target.value }))}
                     >
-                      {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                      {CATEGORIES.map(c => (
+                        <option key={c} value={c}>
+                          {t(`donation.categoryOptions.${c}`)}
+                        </option>
+                      ))}
                     </select>
                     <span className="material-symbols-outlined select-arrow">expand_more</span>
                   </div>
@@ -305,6 +477,8 @@ const DonationForm = () => {
                   ))}
                 </div>
               )}
+
+              <p className="ai-review-note">{t('donation.reviewNotice')}</p>
             </div>
           )}
 
@@ -323,12 +497,13 @@ const DonationForm = () => {
                   type="text"
                   placeholder={t('postcode.example')}
                   value={formData.postcode}
-                  onChange={e => setFormData(prev => ({ ...prev, postcode: e.target.value }))}
-                />
+                onChange={e => setFormData(prev => ({ ...prev, postcode: e.target.value }))}
+              />
                 <span className="field-hint">Only shared with verified recipients once accepted.</span>
               </div>
             )}
 
+            {orgMode && (
             <div>
               <label className="field-label muted" htmlFor="orgCode">
                 {orgMode ? t('donation.orgCode') : t('donation.orgCode')}
@@ -348,16 +523,27 @@ const DonationForm = () => {
                 {orgMode ? 'Your organization code for this surplus posting.' : 'Ask the food bank staff for their code.'}
               </span>
             </div>
+            )}
           </div>
         </main>
 
         {/* Fixed bottom action */}
         <footer className="form-footer">
           <div className="form-footer-inner">
+            {editingListingId && (
+              <button
+                type="button"
+                className="btn-delete-listing"
+                onClick={handleDeleteListing}
+                disabled={loading}
+              >
+                {t('donation.success.deleteListing')}
+              </button>
+            )}
             <button
               type="submit"
               className="btn-submit"
-              disabled={loading || !formData.foodType || !formData.postcode || !formData.orgCode}
+              disabled={loading || !formData.foodType || !formData.postcode || (orgMode && !formData.orgCode)}
             >
               {loading ? (orgMode ? 'Publishing...' : 'Posting...') : t('donation.postButton')}
               {!loading && <span className="material-symbols-outlined">arrow_forward</span>}

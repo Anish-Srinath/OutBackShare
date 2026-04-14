@@ -11,6 +11,7 @@ const ICON_MAP = {
   veg: 'nutrition', vegetable: 'nutrition', produce: 'nutrition', salad: 'salad',
   fruit: 'nutrition', rice: 'restaurant', soup: 'soup_kitchen',
   yogurt: 'icecream', dairy: 'icecream', milk: 'icecream',
+  oil: 'grocery', salt: 'grocery', sauce: 'grocery', vinegar: 'grocery', spice: 'grocery',
   sandwich: 'lunch_dining', burger: 'lunch_dining',
   pizza: 'local_pizza',
 }
@@ -23,7 +24,35 @@ const getIcon = (name = '') => {
   return 'restaurant'
 }
 
-const FILTER_CATEGORIES = ['All', 'Baked goods', 'Produce', 'Dairy', 'Prepared meals', 'Expiring soon']
+const FILTER_CATEGORIES = ['all', 'bakedGoods', 'produce', 'dairy', 'pantry', 'preparedMeals', 'other']
+
+const inferCategory = (foodType = '') => {
+  const value = foodType.toLowerCase()
+  if (value.includes('bread') || value.includes('cake') || value.includes('pastry') || value.includes('macaron') || value.includes('bakery')) return 'bakedGoods'
+  if (value.includes('vegetable') || value.includes('fruit') || value.includes('produce') || value.includes('salad') || value.includes('melon')) return 'produce'
+  if (value.includes('milk') || value.includes('yogurt') || value.includes('cheese') || value.includes('egg') || value.includes('dairy')) return 'dairy'
+  if (value.includes('oil') || value.includes('salt') || value.includes('sauce') || value.includes('vinegar') || value.includes('seasoning') || value.includes('spice')) return 'pantry'
+  if (value.includes('meal') || value.includes('rice') || value.includes('curry') || value.includes('sandwich') || value.includes('pizza') || value.includes('prepared')) return 'preparedMeals'
+  return 'other'
+}
+
+const normalizeCategory = (value = '') => {
+  const lower = String(value).toLowerCase()
+  if (['bakedgoods', 'baked goods', 'bakery & grains', 'bakery'].includes(lower)) return 'bakedGoods'
+  if (['produce', 'fresh produce'].includes(lower)) return 'produce'
+  if (['dairy', 'dairy & eggs'].includes(lower)) return 'dairy'
+  if (['pantry', 'canned goods'].includes(lower)) return 'pantry'
+  if (['preparedmeals', 'prepared meals', 'prepared'].includes(lower)) return 'preparedMeals'
+  if (lower === 'other') return 'other'
+  return ''
+}
+
+const getListingCategory = (listing) => normalizeCategory(listing.category) || inferCategory(listing.foodType)
+
+const getSizeCueLabel = (sizeCue, t) => {
+  if (!sizeCue) return ''
+  return t(`donation.sizeCueOptions.${sizeCue}`, sizeCue)
+}
 
 const getRelativeTime = (createdAt, t) => {
   if (!createdAt) return t('listing.justNow')
@@ -43,11 +72,12 @@ const PostFeedPage = () => {
   const { postcode } = useParams()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
-  const [activeFilter, setActiveFilter] = useState('All')
+  const [activeFilter, setActiveFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [listings, setListings] = useState([])
   const [loading, setLoading] = useState(true)
   const [showLanguageMenu, setShowLanguageMenu] = useState(false)
+  const donorCode = `DONOR-${String(postcode || 'GUEST').toUpperCase()}`
 
   const handleLanguageChange = (lang) => {
     i18n.changeLanguage(lang)
@@ -109,24 +139,18 @@ const PostFeedPage = () => {
     fetchListings()
   }, [postcode])
 
-  const handleClaim = async (listingId) => {
-    try {
-      await axios.post(`/api/listings/${listingId}/claim`, {
-        orgId: 'FB-GUEST', orgName: 'Guest Food Bank'
-      })
-      setListings(prev =>
-        prev.map(l => l.id === listingId ? { ...l, status: 'claimed', claimedBy: 'You' } : l)
-      )
-    } catch {
-      alert('Unable to claim this listing. Please try again.')
-    }
-  }
+  const filtered = listings.filter((l) => {
+    const searchLower = search.toLowerCase()
+    const matchesSearch =
+      !searchLower ||
+      (l.foodType || '').toLowerCase().includes(searchLower) ||
+      (l.orgCode || '').toLowerCase().includes(searchLower) ||
+      String(l.postcode || '').includes(searchLower) ||
+      String(l.location || '').toLowerCase().includes(searchLower)
 
-  const filtered = listings.filter(l => {
-    const nameMatch = (l.foodType || '').toLowerCase().includes(search.toLowerCase())
-    if (!nameMatch) return false
-    if (activeFilter === 'All') return true
-    return true // Category filter would need backend category field
+    if (!matchesSearch) return false
+    if (activeFilter === 'all') return true
+    return getListingCategory(l) === activeFilter
   })
 
   return (
@@ -134,9 +158,14 @@ const PostFeedPage = () => {
       {/* Top Navbar */}
       <header className="navbar">
         <div className="navbar-inner">
-          <div className="nav-brand">{t('appName')}</div>
+          <button className="nav-brand-btn" onClick={() => navigate('/')}>
+            <div className="nav-brand">{t('appName')}</div>
+          </button>
           <div className="nav-center">{t('listing.location', 'Location:')} {postcode}</div>
           <div className="nav-actions">
+            <button className="nav-home-btn" onClick={() => navigate('/')}>
+              {t('common.home')}
+            </button>
             <div className="language-btn-wrapper" style={{ position: 'relative' }}>
               <button 
                 className="nav-icon-btn" 
@@ -205,9 +234,6 @@ const PostFeedPage = () => {
         {/* Board heading */}
         <div className="board-header">
           <h1 className="board-title">{t('feed.title')}</h1>
-          <p className="board-subtitle">
-            {t('postcode.subtitle')}
-          </p>
         </div>
 
         {/* Filters */}
@@ -215,7 +241,7 @@ const PostFeedPage = () => {
           <div className="search-wrapper">
             <span className="material-symbols-outlined search-icon">search</span>
             <input
-              className="search-input"
+              className={`search-input${search ? ' search-input--active' : ''}`}
               type="text"
               placeholder={t('feed.search')}
               value={search}
@@ -224,27 +250,27 @@ const PostFeedPage = () => {
           </div>
           <div className="filter-chips">
             {FILTER_CATEGORIES.map(f => {
-              // Convert category filter to a key for translation
-              const filterKeyMap = {
-                'All': 'all',
-                'Baked goods': 'bakedGoods',
-                'Produce': 'produce',
-                'Dairy': 'dairy',
-                'Prepared meals': 'preparedMeals',
-                'Expiring soon': 'expiringSoon'
-              };
-              const transKey = filterKeyMap[f] || f;
               return (
                 <button
                   key={f}
-                  className={`filter-chip${activeFilter === f ? ' active' : ''}${f === 'Expiring soon' ? ' expiring' : ''}`}
+                  className={`filter-chip${activeFilter === f ? ' active' : ''}`}
                   onClick={() => setActiveFilter(f)}
                 >
-                  {t(`dashboard.tabs.${transKey}`, f)}
+                  {t(`dashboard.tabs.${f}`, f)}
                 </button>
               );
             })}
           </div>
+          {(search || activeFilter !== 'all') && (
+            <p className="results-feedback">
+              {search
+                ? t('feed.searchResults', { count: filtered.length, term: search })
+                : t('feed.filterResults', { count: filtered.length, filter: t(`dashboard.tabs.${activeFilter}`, activeFilter) })}
+            </p>
+          )}
+          <p className="results-feedback results-feedback--secondary">
+            {t('feed.referenceOnly')}
+          </p>
         </section>
 
         {/* Cards grid */}
@@ -263,6 +289,7 @@ const PostFeedPage = () => {
           ) : (
             filtered.map(l => {
               const isClaimed = l.status === 'claimed'
+              const isOwnDonorListing = l.orgCode === donorCode
               return (
                 <div
                   key={l.id}
@@ -312,6 +339,12 @@ const PostFeedPage = () => {
                       {l.orgCode}
                     </p>
 
+                    {l.sizeCue && (
+                      <div className="food-card-size">
+                        {t('donation.sizeCue')}: {getSizeCueLabel(l.sizeCue, t)}
+                      </div>
+                    )}
+
                     <div className="food-card-meta">
                       {isClaimed ? (
                         <div className="food-meta-row claimed-by">
@@ -319,10 +352,12 @@ const PostFeedPage = () => {
                           {t('feed.claimedBy', 'Claimed')}{l.claimedBy ? ` ${l.claimedBy}` : ''}
                         </div>
                       ) : (
+                        l.expiresIn ? (
                         <div className="food-meta-row expiry">
                           <span className="material-symbols-outlined">schedule</span>
-                          {t('listing.expiresIn', { time: l.expiresIn || '–' })}
+                          {t('listing.expiresIn', { time: l.expiresIn })}
                         </div>
+                        ) : null
                       )}
                       <div className="food-meta-row location">
                         <span className="material-symbols-outlined">location_on</span>
@@ -333,16 +368,29 @@ const PostFeedPage = () => {
 
                   {/* ── Claim button ─────────────────────────────────── */}
                   <div className="food-card-actions">
-                    {isClaimed ? (
+                    {isOwnDonorListing ? (
+                      <button
+                        className="claim-btn claim-btn--secondary"
+                        onClick={() => navigate(`/form/${postcode}`, {
+                          state: {
+                            draftListing: {
+                              ...l,
+                              category: getListingCategory(l),
+                            },
+                            replaceListingId: l.id,
+                            postcode,
+                          },
+                        })}
+                      >
+                        {t('feed.editButton')}
+                      </button>
+                    ) : isClaimed ? (
                       <button className="claim-btn claim-btn--disabled" disabled>
                         {t('common.success')}
                       </button>
                     ) : (
-                      <button
-                        className="claim-btn"
-                        onClick={() => handleClaim(l.id)}
-                      >
-                        {t('feed.claimButton')}
+                      <button className="claim-btn claim-btn--secondary" disabled>
+                        {t('feed.availableToGroups')}
                       </button>
                     )}
                   </div>
@@ -368,14 +416,6 @@ const PostFeedPage = () => {
         <button className="nav-tab" onClick={() => navigate(`/form/${postcode}`)}>
           <span className="material-symbols-outlined">add_circle</span>
           <span className="nav-tab-label">{t('home.donor.button')}</span>
-        </button>
-        <button className="nav-tab">
-          <span className="material-symbols-outlined">notifications</span>
-          <span className="nav-tab-label">{t('common.alerts', 'Alerts')}</span>
-        </button>
-        <button className="nav-tab">
-          <span className="material-symbols-outlined">person</span>
-          <span className="nav-tab-label">{t('common.profile', 'Profile')}</span>
         </button>
       </nav>
     </div>

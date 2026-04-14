@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 import '../styles/OrgCodeInputPage.css'
 
 const OrgCodeInputPage = () => {
@@ -21,6 +22,11 @@ const OrgCodeInputPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (!orgCode.trim()) {
+      setError(t('donation.errors.orgCode'))
+      return
+    }
+
     if (orgCode.trim()) {
       navigate('/org/dashboard', { state: { orgCode } })
     } else {
@@ -30,6 +36,9 @@ const OrgCodeInputPage = () => {
 
   return (
     <div className="org-code-page">
+      <div style={{ position: 'absolute', top: '2rem', right: '2rem', zIndex: 10 }}>
+        <LanguageSwitcher />
+      </div>
       <button className="back-link" onClick={() => navigate('/')}>
         <span className="material-symbols-outlined">arrow_back</span>
       </button>

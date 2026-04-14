@@ -91,4 +91,20 @@ export const claimListing = async (listingId, claimData) => {
   }
 }
 
+/**
+ * Expire a listing so it is no longer shown as available.
+ * Used as a temporary "replace listing" fallback when true edit isn't available.
+ * @param {string} listingId
+ * @returns {Promise<Object>}
+ */
+export const expireListing = async (listingId) => {
+  try {
+    const response = await apiClient.patch(`/listings/${listingId}/expire`)
+    return response.data
+  } catch (error) {
+    console.error('Expire listing error:', error)
+    throw error
+  }
+}
+
 export default apiClient

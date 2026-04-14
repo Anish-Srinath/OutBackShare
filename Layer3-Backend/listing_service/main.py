@@ -89,6 +89,8 @@ class ListingCreate(BaseModel):
     unit: str = "portions"
     postcode: str
     orgCode: str
+    category: Optional[str] = None
+    sizeCue: Optional[str] = None
     dietary_tags: list[str] = []
     description: Optional[str] = None
     photoUrl: Optional[str] = None
@@ -160,21 +162,55 @@ def row_to_listing(row) -> dict:
     tags_raw = row["dietary_tags"] or ""
     tags_list = [t.strip() for t in tags_raw.split(",") if t.strip()]
 
+    description_raw = row["description"] or ""
+    size_cue = None
+    description_value = description_raw
+    if description_raw.startswith("[sizeCue:"):
+        prefix_end = description_raw.find("]")
+        if prefix_end != -1:
+            size_cue = description_raw[len("[sizeCue:"):prefix_end]
+            description_value = description_raw[prefix_end + 1 :].strip() or None
+
     return {
         "id":           row["listing_id"],
-        "foodType":     row["food_category"] or "",
+        "foodType":     row["title"] or row["food_category"] or "",
         "quantity":     float(row["quantity"]),
         "unit":         row["unit"] or "portions",
         "postcode":     row["postcode"] or "",
         "orgCode":      row["org_code"] or "",
+        "category":     row["food_category"] or "Other",
+        "sizeCue":      size_cue,
         "dietary_tags": tags_list,
-        "description":  row["description"],
+        "description":  description_value,
         "photoUrl":     row["photo_url"],
         "createdAt":    row["created_at"],
         "status":       row["status"],
         "claimedBy":    row["claimed_by_org_code"],   # from LEFT JOIN
         "claimedAt":    row["claimed_at"],
     }
+
+
+def normalize_category(value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
+    lower = value.strip().lower()
+    mapping = {
+        "bakedgoods": "bakedGoods",
+        "baked goods": "bakedGoods",
+        "bakery & grains": "bakedGoods",
+        "bakery": "bakedGoods",
+        "produce": "produce",
+        "fresh produce": "produce",
+        "dairy": "dairy",
+        "dairy & eggs": "dairy",
+        "pantry": "pantry",
+        "canned goods": "pantry",
+        "preparedmeals": "preparedMeals",
+        "prepared meals": "preparedMeals",
+        "prepared": "preparedMeals",
+        "other": "other",
+    }
+    return mapping.get(lower, value)
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -202,6 +238,10 @@ async def create_listing(listing: ListingCreate):
     tags_str = ",".join(listing.dietary_tags)
     now = datetime.now()
 
+    description_value = listing.description or ""
+    if listing.sizeCue:
+        description_value = f"[sizeCue:{listing.sizeCue}] {description_value}".strip()
+
     await database.execute(
         """
         INSERT INTO food_listing (
@@ -217,10 +257,10 @@ async def create_listing(listing: ListingCreate):
         {
             "listing_id":   listing_id,
             "title":        listing.foodType,
-            "description":  listing.description,
+            "description":  description_value or None,
             "quantity":     listing.quantity,
             "unit":         listing.unit,
-            "food_category": listing.foodType,
+            "food_category": normalize_category(listing.category) or listing.foodType,
             "dietary_tags": tags_str,
             "photo_url":    listing.photoUrl,
             "postcode":     listing.postcode,
@@ -245,6 +285,7 @@ async def get_listings(
     postcode: Optional[str] = None,
     foodType: Optional[str] = None,
     status: str = "available",
+    claimedBy: Optional[str] = None,
 ):
     """
     Fetch listings from PostgreSQL with optional filters.
@@ -272,6 +313,10 @@ async def get_listings(
     if foodType:
         query += " AND LOWER(fl.food_category) LIKE :food_type"
         params["food_type"] = f"%{foodType.lower()}%"
+
+    if claimedBy:
+        query += " AND co.org_code = :claimed_by_org_code"
+        params["claimed_by_org_code"] = claimedBy
 
     query += " ORDER BY fl.created_at DESC"
 

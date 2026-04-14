@@ -7,6 +7,7 @@ const PostcodeInputPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [postcode, setPostcode] = useState('')
+  const [error, setError] = useState('')
 
   useEffect(() => {
     document.getElementById('postcode-input')?.focus()
@@ -15,6 +16,7 @@ const PostcodeInputPage = () => {
   const handleInputChange = (e) => {
     const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4)
     setPostcode(value)
+    if (error) setError('')
   }
 
   const handleSubmit = (e) => {
@@ -22,7 +24,7 @@ const PostcodeInputPage = () => {
     if (postcode.length === 4) {
       navigate(`/feed/${postcode}`)
     } else {
-      alert(t('postcode.example'))
+      setError(t('postcode.example'))
     }
   }
 
@@ -41,9 +43,7 @@ const PostcodeInputPage = () => {
           <div className="postcode-brand">{t('appName')}</div>
 
           <h1 className="postcode-title">{t('postcode.title')}</h1>
-          <p className="postcode-desc">
-            {t('postcode.subtitle')}
-          </p>
+          <p className="postcode-desc">{t('postcode.subtitle')}</p>
 
           <form onSubmit={handleSubmit} className="form-group">
             <input
@@ -58,21 +58,13 @@ const PostcodeInputPage = () => {
               autoComplete="postal-code"
             />
 
+            {error && <div className="inline-error-message">{error}</div>}
+
             <button type="submit" className="submit-btn">
               {t('postcode.button')} →
             </button>
 
-            <button
-              type="button"
-              className="secondary-link"
-              onClick={() => navigate('/form')}
-            >
-              {t('home.donor.button')}
-            </button>
-
-            <p className="privacy-note">
-              {t('common.secure')}
-            </p>
+            <p className="privacy-note">{t('common.secure')}</p>
           </form>
         </div>
       </main>
