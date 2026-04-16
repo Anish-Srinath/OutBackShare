@@ -17,6 +17,7 @@ from PIL import Image
 
 DINO_MODEL_NAME = "IDEA-Research/grounding-dino-base"
 
+# Conservative defaults to reduce false-positive counts.
 BOX_THRESHOLD  = 0.35
 TEXT_THRESHOLD = 0.25
 
@@ -30,6 +31,7 @@ class DINOCounter:
     """
     def __init__(self, model_name: str = DINO_MODEL_NAME):
 
+        # Import lazily so the API can still run when transformers is unavailable.
         from transformers import AutoProcessor, AutoModelForZeroShotObjectDetection
         print(f"Loading Grounding DINO ({model_name})...")
         
@@ -86,6 +88,7 @@ def get_dino_counter(model_name: str = DINO_MODEL_NAME) -> DINOCounter:
     Same singleton pattern as get_recognizer():  loads once, reused over n over
     """
     global _dino_instance
+    # Singleton avoids repeated model downloads and keeps startup predictable.
     if _dino_instance is None:
         _dino_instance = DINOCounter(model_name=model_name)
     return _dino_instance

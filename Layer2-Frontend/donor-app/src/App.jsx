@@ -15,6 +15,7 @@ import LiveListingBoard from './pages/LiveListingBoard'
 function App() {
   return (
     <BrowserRouter>
+      {/* Route map for both donor and organization experiences. */}
       <Routes>
         {/* Home page - role selection */}
         <Route path="/" element={<HomePage />} />

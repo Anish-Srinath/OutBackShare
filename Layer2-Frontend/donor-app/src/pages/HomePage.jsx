@@ -22,6 +22,7 @@ const HomePage = () => {
 
         <div className="cards-grid">
           {/* Donor card */}
+          {/* Donors enter postcode first so feed/results can be scoped locally. */}
           <div className="role-card" onClick={() => navigate('/postcode')}>
             <div className="role-card-accent donor" />
             <div className="role-card-inner">
@@ -40,6 +41,7 @@ const HomePage = () => {
           </div>
 
           {/* Org / community card */}
+          {/* Organizations go through org code auth before viewing dashboard actions. */}
           <div className="role-card" onClick={() => navigate('/org/code')}>
             <div className="role-card-accent org" />
             <div className="role-card-inner">

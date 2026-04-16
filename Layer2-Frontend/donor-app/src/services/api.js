@@ -2,6 +2,7 @@ import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
+// Single axios instance keeps timeout/baseURL behavior consistent across pages.
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 120000, // 120 seconds timeout for long AI processing
@@ -59,6 +60,22 @@ export const submitListing = async (listingData) => {
 }
 
 /**
+ * Update an existing listing in place
+ * @param {string} listingId - Listing id
+ * @param {Object} listingData - Full listing payload
+ * @returns {Promise<Object>} - Updated listing data
+ */
+export const updateListing = async (listingId, listingData) => {
+  try {
+    const response = await apiClient.patch(`/listings/${listingId}`, listingData)
+    return response.data
+  } catch (error) {
+    console.error('Update listing error:', error)
+    throw error
+  }
+}
+
+/**
  * Get available listings (for organization view)
  * @param {Object} filters - Filter parameters (postcode, foodType, etc.)
  * @returns {Promise<Array>} - Array of listings
@@ -69,6 +86,7 @@ export const getAvailableListings = async (filters = {}) => {
       params: filters,
     })
     const payload = response.data
+    // Accept both plain-array and wrapped-array payloads for backward compatibility.
     if (Array.isArray(payload)) return payload
     if (Array.isArray(payload?.items)) return payload.items
     console.warn('Unexpected listings payload shape:', payload)

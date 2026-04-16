@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { recognizeFoodFromImage, submitListing, uploadImage, expireListing } from '../services/api'
+import { recognizeFoodFromImage, submitListing, updateListing, uploadImage, expireListing } from '../services/api'
 import LanguageSwitcher from './LanguageSwitcher'
 import '../styles/DonationForm.css'
 
@@ -59,6 +59,7 @@ const DonationForm = () => {
   const [lastCreatedListing, setLastCreatedListing] = useState(null)
   const donorGeneratedCode = `DONOR-${(formData.postcode || initialPostcode || 'GUEST').toUpperCase()}`
 
+  // Route users back to the most relevant board and force a refresh after mutation.
   const handleReturnToPrimary = () => {
     const normalizedParamPostcode = normalizePostcodeValue(postcode || '')
     const normalizedFormPostcode = normalizePostcodeValue(formData.postcode || '')
@@ -159,21 +160,16 @@ const DonationForm = () => {
         ...formData,
         postcode: normalizedPostcode,
         orgCode: orgMode ? formData.orgCode : donorGeneratedCode,
-        photoUrl: permanentPhotoUrl,
+        photoUrl: permanentPhotoUrl || formData.photoUrl || null,
         description: formData.description || null,
       }
       console.log('Submitting listing with data:', submissionPayload)
-      const createdListing = await submitListing(submissionPayload)
+      // Editing updates the same listing; new posts create a new listing id.
+      const createdListing = editingListingId
+        ? await updateListing(editingListingId, submissionPayload)
+        : await submitListing(submissionPayload)
       console.log('Listing submitted successfully')
       setLastCreatedListing(createdListing || null)
-
-      if (editingListingId) {
-        try {
-          await expireListing(editingListingId)
-        } catch (expireError) {
-          console.warn('Previous listing could not be expired after replacement:', expireError)
-        }
-      }
       
       setSuccess(true)
       setFormData({

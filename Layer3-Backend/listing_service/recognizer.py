@@ -25,6 +25,7 @@ def_classes = def_model_dir / "classes.json"
 N_CLASSES = 101
 
 img_transforms = transforms.Compose([
+    # Match the same normalization used during ConvNeXt training.
     transforms.Resize(256),
     transforms.CenterCrop(224),
     transforms.ToTensor(),
@@ -51,6 +52,7 @@ class FoodRecognizer:
         with open(classes_pth) as f:
             self.classes = json.load(f)
 
+        # Load class list and neural weights once at startup.
         self.model = self.load_model(model_pth)
         print(f"FoodRecognizer ready — model: {model_pth.name}")
 
@@ -63,6 +65,7 @@ class FoodRecognizer:
             self.dino_counter = None
 
     def load_model(self,weights_pth):
+        # Build the exact architecture expected by the saved state dict.
         model = models.convnext_tiny(weights=None)
         model.classifier[2] = torch.nn.Linear(768, N_CLASSES)
         state_dict = torch.load(weights_pth, map_location="cpu")
@@ -91,6 +94,7 @@ class FoodRecognizer:
         """
         Runs inference on one image and return the autofill payload.
         """
+        # Convert arbitrary input types to a normalized tensor batch.
         img = self.to_pil(image_inp)
         tensor = img_transforms(img).unsqueeze(0)
 
@@ -103,6 +107,7 @@ class FoodRecognizer:
             top_probs = top_probs[0].tolist()
             top_indices = top_indices[0].tolist()
 
+            # Top-1 drives autofill; top-3 are shown as suggestions.
             top1_raw = self.classes[top_indices[0]]
             top1_conf = top_probs[0]
             top1_info = get_info(top1_raw)

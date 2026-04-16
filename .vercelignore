@@ -1,0 +1,8 @@
+*
+!Layer2-Frontend
+!Layer2-Frontend/donor-app
+!Layer2-Frontend/donor-app/**
+Layer2-Frontend/donor-app/node_modules
+Layer2-Frontend/donor-app/node_modules/**
+Layer2-Frontend/donor-app/dist
+Layer2-Frontend/donor-app/dist/**

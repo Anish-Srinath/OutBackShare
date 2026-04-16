@@ -15,6 +15,7 @@ Maps every Food-101 class name (as output by the model) to:
 #   "non-vegetarian"  - contains meat, poultry, fish, or seafood
 
 FOOD_LOOKUP: dict[str, dict] = {
+    # Food-101 class key -> UI name, dietary tags, and optional DINO counting prompt.
     "apple_pie":              {"display_name": "Apple Pie",              "tags": ["vegetarian"],     "dino_prompt": None},
     "baby_back_ribs":         {"display_name": "Baby Back Ribs",         "tags": ["non-vegetarian"], "dino_prompt": "rib"},
     "baklava":                {"display_name": "Baklava",                "tags": ["vegetarian"],     "dino_prompt": "baklava piece"},
@@ -124,6 +125,7 @@ def get_info(raw_class: str) -> dict:
     Look up metadata for a Food-101 class name.
     Returns a safe fallback dict if the class isnt found.
     """
+    # Fallback keeps API stable even for unknown/extended class labels.
     return FOOD_LOOKUP.get(raw_class, {
         "display_name": raw_class.replace("_", " ").title(), 
         "tags": [],

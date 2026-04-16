@@ -106,6 +106,7 @@ const LiveListingBoard = () => {
       setLoading(true)
       setError('')
       try {
+        // Fetch both boards in parallel to keep dashboard latency low.
         const [availableData, claimedData] = await Promise.all([
           getAvailableListings({ status: 'available' }),
           getAvailableListings({ status: 'claimed', claimedBy: orgCode }),
@@ -148,6 +149,7 @@ const LiveListingBoard = () => {
       const claimedListing = listings.find((listing) => listing.id === listingId)
       await claimListing(listingId, { orgId: orgCode })
       if (claimedListing) {
+        // Optimistic move: remove from available list and prepend into claimed list.
         setClaimedListings((current) => [
           { ...claimedListing, claimedByOrgId: orgCode, claimedAt: new Date().toISOString() },
           ...(Array.isArray(current) ? current : []).filter((listing) => listing.id !== listingId),

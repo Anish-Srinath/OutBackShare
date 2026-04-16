@@ -329,6 +329,79 @@ async def create_listing(listing: ListingCreate):
     }
 
 
+@app.patch("/listings/{listing_id}", response_model=Listing)
+async def update_listing(listing_id: str, listing: ListingCreate):
+    """Update an existing available listing in place."""
+    # Guard against editing missing or already-claimed/expired rows.
+    existing = await database.fetch_one(
+        "SELECT listing_id, status FROM food_listing WHERE listing_id = :listing_id",
+        {"listing_id": listing_id},
+    )
+    if not existing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    if existing["status"] != "available":
+        raise HTTPException(status_code=400, detail="Only available listings can be edited")
+
+    normalized_postcode = (listing.postcode or "").strip()
+    org_id = await get_or_create_org(listing.orgCode)
+    tags_str = ",".join(listing.dietary_tags)
+
+    description_value = listing.description or ""
+    if listing.sizeCue:
+        description_value = f"[sizeCue:{listing.sizeCue}] {description_value}".strip()
+
+    # Keep the same listing_id and mutate only editable business fields.
+    await database.execute(
+        """
+        UPDATE food_listing
+        SET
+            title = :title,
+            description = :description,
+            quantity = :quantity,
+            unit = :unit,
+            food_category = :food_category,
+            dietary_tags = :dietary_tags,
+            photo_url = :photo_url,
+            postcode = :postcode,
+            org_code = :org_code,
+            org_id = :org_id
+        WHERE listing_id = :listing_id
+        """,
+        {
+            "listing_id": listing_id,
+            "title": listing.foodType,
+            "description": description_value or None,
+            "quantity": listing.quantity,
+            "unit": listing.unit,
+            "food_category": normalize_category(listing.category) or listing.foodType,
+            "dietary_tags": tags_str,
+            "photo_url": listing.photoUrl,
+            "postcode": normalized_postcode,
+            "org_code": listing.orgCode,
+            "org_id": org_id,
+        },
+    )
+
+    updated_row = await database.fetch_one(
+        """
+        SELECT
+            fl.*, 
+            o.org_code,
+            co.org_code AS claimed_by_org_code
+        FROM food_listing fl
+        LEFT JOIN organization o  ON fl.org_id            = o.org_id
+        LEFT JOIN organization co ON fl.claimed_by_org_id = co.org_id
+        WHERE fl.listing_id = :listing_id
+        """,
+        {"listing_id": listing_id},
+    )
+    if not updated_row:
+        raise HTTPException(status_code=404, detail="Listing not found after update")
+
+    # Return normalized API shape expected by frontend pages.
+    return row_to_listing(updated_row)
+
+
 @app.get("/listings", response_model=list[Listing])
 async def get_listings(
     postcode: Optional[str] = None,

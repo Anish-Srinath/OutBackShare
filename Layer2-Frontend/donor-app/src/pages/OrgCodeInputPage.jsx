@@ -15,6 +15,7 @@ const OrgCodeInputPage = () => {
   }, [])
 
   const handleInputChange = (e) => {
+    // Normalize input to uppercase code format used by backend/org lookup.
     const value = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20)
     setOrgCode(value)
     if (error) setError('')
@@ -27,6 +28,7 @@ const OrgCodeInputPage = () => {
       return
     }
 
+    // Pass orgCode through route state so dashboard can load org-scoped actions.
     if (orgCode.trim()) {
       navigate('/org/dashboard', { state: { orgCode } })
     } else {

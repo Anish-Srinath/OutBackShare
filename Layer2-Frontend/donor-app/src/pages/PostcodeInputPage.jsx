@@ -14,6 +14,7 @@ const PostcodeInputPage = () => {
   }, [])
 
   const handleInputChange = (e) => {
+    // Keep postcode strictly numeric and limited to 4 AU-style digits.
     const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4)
     setPostcode(value)
     if (error) setError('')
@@ -21,6 +22,7 @@ const PostcodeInputPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    // Only navigate when postcode is complete; otherwise show inline guidance.
     if (postcode.length === 4) {
       navigate(`/feed/${postcode}`)
     } else {

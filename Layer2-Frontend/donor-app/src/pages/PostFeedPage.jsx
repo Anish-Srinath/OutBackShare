@@ -90,6 +90,7 @@ const PostFeedPage = () => {
   useEffect(() => {
     const fetchListings = async () => {
       try {
+        // _ts busts intermediate caches so users can see fresh posts immediately.
         const data = await getAvailableListings({ postcode: normalizedPostcode, status: 'available', _ts: Date.now() })
         const nextListings = Array.isArray(data) ? data : []
         const postedListing = location.state?.postedListing
@@ -99,6 +100,7 @@ const PostFeedPage = () => {
           String(postedListing.postcode || '') === normalizedPostcode &&
           String(postedListing.status || 'available') === 'available'
         ) {
+          // Keep the latest edited/posted item visible even if backend ordering lags briefly.
           const withoutDuplicate = nextListings.filter((item) => item.id !== postedListing.id)
           setListings([postedListing, ...withoutDuplicate])
         } else {
