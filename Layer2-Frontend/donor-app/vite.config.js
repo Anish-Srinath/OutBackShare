@@ -16,6 +16,12 @@ export default defineConfig({
       '/static': {
         target: 'http://localhost:8000',
         changeOrigin: true,
+      },
+      '/pred-api': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/pred-api/, ''),
+        logLevel: 'debug',
       }
     }
   }

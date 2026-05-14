@@ -1,132 +1,161 @@
-import axios from 'axios'
+import axios from "axios"
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+const RAW_API_BASE_URL = String(import.meta.env.VITE_API_URL || "").trim()
+const IS_LOCALHOST_BASE =
+  /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?/i.test(RAW_API_BASE_URL)
 
-// Single axios instance keeps timeout/baseURL behavior consistent across pages.
+// In local dev we normalize localhost direct URLs back to Vite proxy (/api),
+// so API and /static always follow the same backend target.
+const API_BASE_URL =
+  import.meta.env.DEV && IS_LOCALHOST_BASE
+    ? "/api"
+    : (RAW_API_BASE_URL || "/api")
+const FALLBACK_BASE_URL = "/api"
+const IS_LOCAL_DIRECT_BASE =
+  typeof API_BASE_URL === "string" &&
+  /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?/i.test(API_BASE_URL)
+
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 120000, // 120 seconds timeout for long AI processing
+  timeout: 120000,
 })
 
-/**
- * Send image to AI recognition service
- * @param {FormData} imageFormData - Form data containing the image file
- * @returns {Promise<Object>} - foodType, quantity, confidence, etc.
- */
+// Prediction service routes through a dedicated Vite proxy path in dev (/pred-api → port 8001).
+const PREDICTION_BASE_URL = import.meta.env.DEV
+  ? '/pred-api'
+  : (String(import.meta.env.VITE_PREDICTION_URL || '').trim() || '/pred-api')
+
+export const predictionApiClient = axios.create({
+  baseURL: PREDICTION_BASE_URL,
+  timeout: 120000,
+})
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const requestConfig = error?.config
+    // If direct localhost target is down in local dev, retry once via Vite proxy.
+    const shouldRetryWithProxy =
+      IS_LOCAL_DIRECT_BASE &&
+      requestConfig &&
+      !requestConfig.__retryWithProxy &&
+      !error?.response
+
+    if (shouldRetryWithProxy) {
+      requestConfig.__retryWithProxy = true
+      requestConfig.baseURL = FALLBACK_BASE_URL
+      return apiClient.request(requestConfig)
+    }
+
+    return Promise.reject(error)
+  },
+)
+
 export const recognizeFoodFromImage = async (imageFormData) => {
-  try {
-    const response = await apiClient.post('/image-recognition/recognize', imageFormData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-    return response.data
-  } catch (error) {
-    console.error('Image recognition error:', error)
-    throw error
-  }
+  // Listing-service endpoint for food class prediction + optional quantity hints.
+  const response = await apiClient.post("/image-recognition/recognize", imageFormData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  })
+  return response.data
 }
 
-/**
- * Upload a food image and get back a permanent server-side URL.
- * @param {File} file - The image file to upload
- * @returns {Promise<{url: string}>}
- */
 export const uploadImage = async (file) => {
-  try {
-    const fd = new FormData()
-    fd.append('image', file)
-    const response = await apiClient.post('/upload', fd, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-    return response.data // { url: '/static/uuid.jpg' }
-  } catch (error) {
-    console.error('Image upload error:', error)
-    throw error
-  }
+  const fd = new FormData()
+  fd.append("image", file)
+  const response = await apiClient.post("/upload", fd, {
+    headers: { "Content-Type": "multipart/form-data" },
+  })
+  return response.data
 }
 
-/**
- * Submit a food listing
- * @param {Object} listingData - Listing information
- * @returns {Promise<Object>} - Created listing data
- */
 export const submitListing = async (listingData) => {
-  try {
-    const response = await apiClient.post('/listings', listingData)
-    return response.data
-  } catch (error) {
-    console.error('Submit listing error:', error)
-    throw error
-  }
+  const response = await apiClient.post("/listings", listingData)
+  return response.data
 }
 
-/**
- * Update an existing listing in place
- * @param {string} listingId - Listing id
- * @param {Object} listingData - Full listing payload
- * @returns {Promise<Object>} - Updated listing data
- */
 export const updateListing = async (listingId, listingData) => {
-  try {
-    const response = await apiClient.patch(`/listings/${listingId}`, listingData)
-    return response.data
-  } catch (error) {
-    console.error('Update listing error:', error)
-    throw error
-  }
+  const response = await apiClient.patch("/listings/" + listingId, listingData)
+  return response.data
 }
 
-/**
- * Get available listings (for organization view)
- * @param {Object} filters - Filter parameters (postcode, foodType, etc.)
- * @returns {Promise<Array>} - Array of listings
- */
+export const deleteListing = async (listingId, orgCode) => {
+  const response = await apiClient.delete("/listings/" + listingId, {
+    params: { orgCode },
+  })
+  return response.data
+}
+
+export const getListing = async (listingId) => {
+  const response = await apiClient.get("/listings/" + listingId)
+  return response.data
+}
+
 export const getAvailableListings = async (filters = {}) => {
-  try {
-    const response = await apiClient.get('/listings', {
-      params: filters,
-    })
-    const payload = response.data
-    // Accept both plain-array and wrapped-array payloads for backward compatibility.
-    if (Array.isArray(payload)) return payload
-    if (Array.isArray(payload?.items)) return payload.items
-    console.warn('Unexpected listings payload shape:', payload)
-    return []
-  } catch (error) {
-    console.error('Get listings error:', error)
-    throw error
-  }
+  const response = await apiClient.get("/listings", { params: filters })
+  return response.data
 }
 
-/**
- * Claim a listing
- * @param {string} listingId - ID of the listing to claim
- * @param {Object} claimData - Claim information (org_id, etc.)
- * @returns {Promise<Object>} - Claim confirmation
- */
+export const getRiskScores = async (postcodes = []) => {
+  const response = await apiClient.get('/predictions/risk-scores', { params: { postcodes } })
+  return response.data
+}
+
+export const getGapPostcodes = async (params = {}) => {
+  const response = await apiClient.get('/predictions/gap-postcodes', { params })
+  return response.data
+}
+
+export const getHotspots = async (params = {}) => {
+  // Hotspots always come from prediction service route (proxy to :8001 in dev).
+  const response = await predictionApiClient.get('/predictions/hotspots', { params })
+  return response.data
+}
+
 export const claimListing = async (listingId, claimData) => {
-  try {
-    const response = await apiClient.post(`/listings/${listingId}/claim`, claimData)
-    return response.data
-  } catch (error) {
-    console.error('Claim listing error:', error)
-    throw error
-  }
+  const response = await apiClient.post("/listings/" + listingId + "/claim", claimData)
+  return response.data
 }
 
-/**
- * Expire a listing so it is no longer shown as available.
- * Used as a temporary "replace listing" fallback when true edit isn't available.
- * @param {string} listingId
- * @returns {Promise<Object>}
- */
-export const expireListing = async (listingId) => {
-  try {
-    const response = await apiClient.patch(`/listings/${listingId}/expire`)
-    return response.data
-  } catch (error) {
-    console.error('Expire listing error:', error)
-    throw error
-  }
+export const unclaimListing = async (listingId, unclaimData) => {
+  const response = await apiClient.patch("/listings/" + listingId + "/unclaim", unclaimData)
+  return response.data
+}
+
+export const confirmPickup = async (listingId, pickupData) => {
+  const response = await apiClient.patch("/listings/" + listingId + "/pickup", pickupData)
+  return response.data
+}
+
+export const getClaimThread = async (claimId, orgCode) => {
+  const response = await apiClient.get("/claims/" + claimId, { params: { orgCode } })
+  return response.data
+}
+
+export const getClaimMessages = async (claimId, orgCode) => {
+  // Claim thread is role-scoped by orgCode to enforce access boundaries.
+  const response = await apiClient.get("/claims/" + claimId + "/messages", { params: { orgCode } })
+  return response.data
+}
+
+export const sendClaimMessage = async (claimId, payload) => {
+  const response = await apiClient.post("/claims/" + claimId + "/messages", payload)
+  return response.data
+}
+
+export const markClaimMessagesRead = async (claimId, orgCode) => {
+  const response = await apiClient.patch("/claims/" + claimId + "/messages/read", null, { params: { orgCode } })
+  return response.data
+}
+
+
+export const getPredictionRiskScores = async (filters = {}) => {
+  const response = await apiClient.get('/predictions/risk-scores', { params: filters })
+  return response.data
 }
 
 export default apiClient
+
+export const registerUser = async ({ orgCode, orgType, orgName, businessAddress, preferredLocation, maxPickupDistanceKm }) => {
+  const response = await apiClient.post('/register', { orgCode, orgType, orgName, businessAddress, preferredLocation, maxPickupDistanceKm })
+  return response.data
+}

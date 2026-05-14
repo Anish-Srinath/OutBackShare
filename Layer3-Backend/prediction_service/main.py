@@ -8,11 +8,14 @@ Endpoints:
   GET /intelligence/supply-gaps
 """
 
+import sys
 import asyncio
 import json
 import os
 from datetime import date, datetime, timedelta
 from typing import Optional
+
+sys.path.insert(0, os.path.dirname(__file__))
 
 import databases
 import numpy as np

@@ -1,7 +1,8 @@
 import React from 'react'
 import DonationForm from '../components/DonationForm'
 
-// Thin route wrapper: all business logic/state live inside DonationForm.
+// DonationFormPage is now just a thin wrapper.
+// DonationForm handles its own header, layout, and navigation.
 const DonationFormPage = () => <DonationForm />
 
 export default DonationFormPage
