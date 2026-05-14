@@ -20,8 +20,10 @@ const DIGITS_ONLY  = '0123456789'
 const SAFE_CODE_RE = /^[A-Z0-9-]{3,20}$/
 
 const STORAGE_KEYS = {
-  donor: 'crisislink-donor-code',
-  org:   'crisislink-org-code',
+  donor:     'crisislink-donor-code',
+  org:       'crisislink-org-code',
+  donorName: 'crisislink-donor-name',
+  orgName:   'crisislink-org-name',
 }
 
 /**
@@ -107,4 +109,20 @@ export function storeOrgCode(code) {
   } catch {
     return false
   }
+}
+
+export function storeOrgName(name) {
+  try { localStorage.setItem(STORAGE_KEYS.orgName, String(name || '').slice(0, 255)); return true } catch { return false }
+}
+
+export function getStoredOrgName() {
+  try { return localStorage.getItem(STORAGE_KEYS.orgName) || null } catch { return null }
+}
+
+export function storeDonorName(name) {
+  try { localStorage.setItem(STORAGE_KEYS.donorName, String(name || '').slice(0, 255)); return true } catch { return false }
+}
+
+export function getStoredDonorName() {
+  try { return localStorage.getItem(STORAGE_KEYS.donorName) || null } catch { return null }
 }

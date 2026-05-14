@@ -110,8 +110,8 @@
 }
 
 .status-ready {
-  background: rgba(17, 122, 71, 0.1);
-  color: #117a47;
+  background: rgba(var(--role-primary-rgb, 11, 123, 89), 0.1);
+  color: var(--primary, #00694c);
 }
 
 .status-waiting {
@@ -309,8 +309,8 @@
   justify-content: center;
   gap: 0.6rem;
   padding: 0.85rem;
-  background: #117a47;
-  color: #fff;
+  background: var(--primary, #00694c);
+  color: var(--on-primary, #fff);
   border: none;
   border-radius: var(--radius-full, 999px);
   font-family: var(--font-headline, sans-serif);
@@ -318,7 +318,7 @@
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.15s;
-  box-shadow: 0 2px 8px rgba(17, 122, 71, 0.3);
+  box-shadow: 0 2px 8px rgba(var(--role-primary-rgb, 11, 123, 89), 0.3);
 }
 
 .food-collected-btn:hover:not(:disabled) {

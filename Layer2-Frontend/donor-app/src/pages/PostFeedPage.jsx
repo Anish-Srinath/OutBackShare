@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { deleteListing, getAvailableListings } from '../services/api'
+import ChatModal from '../components/ChatModal'
 import { DIETARY_FILTER_OPTIONS, FILTER_OPTIONS, formatBestBeforeLabel, resolveListingCategory } from '../constants/listings'
 import DonorFeatureNav from '../components/DonorFeatureNav'
 import LogisticsGuideCard from '../components/LogisticsGuideCard'
@@ -10,6 +11,7 @@ import WorkspaceFilterPanel from '../components/WorkspaceFilterPanel'
 import WorkspaceHeader from '../components/WorkspaceHeader'
 import WorkspaceSummaryCard from '../components/WorkspaceSummaryCard'
 import { forgetDonorListing, getOrCreateDonorCode, isRememberedDonorListing } from '../utils/donorIdentity'
+import { getStoredDonorName } from '../utils/codeGeneration'
 import { resolveImageUrl } from '../utils/imageUrl'
 import { getSavedDonorPostcode, saveDonorPostcode } from '../utils/donorPostcode'
 import { mergeListingSafetyFallback } from '../utils/listingSafety'
@@ -220,8 +222,10 @@ const PostFeedPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [brokenImageIds, setBrokenImageIds] = useState([])
+  const [chatClaim, setChatClaim] = useState(null)
 
   const donorCode = useMemo(() => getOrCreateDonorCode(), [])
+  const donorName = getStoredDonorName()
   const postcode = String(routePostcode || location.state?.postcode || getSavedDonorPostcode() || '').trim()
 
   const fetchListings = async () => {
@@ -369,7 +373,7 @@ const PostFeedPage = () => {
         <WorkspaceSummaryCard
           role="donor"
           className="workspace-listings-summary workspace-listings-summary--donor"
-          title={t('feed.pageTitle', 'My listings')}
+          title={donorName || t('feed.pageTitle', 'My listings')}
           subtitle={t('feed.subtitle', 'Edit or remove the items you have posted.')}
           action={(
             <button
@@ -718,6 +722,16 @@ const PostFeedPage = () => {
                   <div className="food-card-actions donor-card-actions">
                     {ownListing ? (
                       <>
+                        {isClaimedListing && listing.claimId ? (
+                          <button
+                            type="button"
+                            className="card-action-btn primary"
+                            onClick={() => setChatClaim({ claimId: listing.claimId, title: listing.foodType, orgCode: listing.orgCode })}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '1rem', verticalAlign: 'middle', marginRight: '4px' }}>forum</span>
+                            {t('chat.openChat', 'Chat with organisation')}
+                          </button>
+                        ) : null}
                         <button
                           type="button"
                           className={listingLocked ? 'card-action-btn primary disabled' : 'card-action-btn primary'}
@@ -760,6 +774,15 @@ const PostFeedPage = () => {
           </div>
         )}
       </main>
+
+      {chatClaim ? (
+        <ChatModal
+          claimId={chatClaim.claimId}
+          listingTitle={chatClaim.title}
+          orgCode={chatClaim.orgCode}
+          onClose={() => setChatClaim(null)}
+        />
+      ) : null}
     </div>
   )
 }

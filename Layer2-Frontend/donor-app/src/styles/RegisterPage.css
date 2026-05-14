@@ -373,6 +373,66 @@
   line-height: 1.45;
 }
 
+/* ── Sign-in / New-user divider ────────────────────────────── */
+.register-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  color: var(--outline);
+  font-size: 0.8rem;
+}
+
+.register-divider::before,
+.register-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--surface-container-high);
+}
+
+/* ── "New user? Register here" outlined button ─────────────── */
+.register-new-user-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--primary);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.register-new-user-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* ── Empty code box state ──────────────────────────────────── */
+.code-display-box--empty {
+  opacity: 0.6;
+  cursor: default;
+  user-select: none;
+}
+
+.code-display-placeholder {
+  font-size: 0.9rem;
+  color: var(--on-surface-variant);
+  font-style: italic;
+}
+
+/* ── Generate button (primary state before code exists) ────── */
+.btn-regenerate--generate {
+  background: var(--primary) !important;
+  color: var(--on-primary) !important;
+}
+
 /* ── Scroll affordance for tall form on small screens ──────── */
 @media (max-height: 700px) {
   .register-page {

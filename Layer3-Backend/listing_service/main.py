@@ -1082,6 +1082,15 @@ class RegisterRequest(BaseModel):
         return v
 
 
+@app.get("/check-code")
+async def check_code_availability(code: str):
+    row = await database.fetch_one(
+        "SELECT org_id FROM organization WHERE UPPER(org_code) = UPPER(:code)",
+        {"code": code},
+    )
+    return {"available": row is None}
+
+
 @app.post("/register", status_code=201)
 async def register_identity(request: Request, body: RegisterRequest):
     try:

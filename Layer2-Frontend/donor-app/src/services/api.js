@@ -159,3 +159,8 @@ export const registerUser = async ({ orgCode, orgType, orgName, businessAddress,
   const response = await apiClient.post('/register', { orgCode, orgType, orgName, businessAddress, preferredLocation, maxPickupDistanceKm })
   return response.data
 }
+
+export const checkCodeAvailability = async (code) => {
+  const response = await apiClient.get('/check-code', { params: { code } })
+  return response.data
+}

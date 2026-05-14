@@ -11,6 +11,7 @@ import WorkspaceFilterPanel from '../components/WorkspaceFilterPanel'
 import WorkspaceHeader from '../components/WorkspaceHeader'
 import WorkspaceSummaryCard from '../components/WorkspaceSummaryCard'
 import { mergeListingSafetyFallback } from '../utils/listingSafety'
+import { getStoredOrgName } from '../utils/codeGeneration'
 import ChatModal from '../components/ChatModal'
 import '../styles/LiveListingBoard.css'
 
@@ -314,6 +315,7 @@ const LiveListingBoard = () => {
   })()
 
   const orgCode = location.state?.orgCode || savedOrgSession.orgCode || 'HCFB-2841'
+  const orgName = getStoredOrgName()
 
   useEffect(() => {
     window.localStorage.setItem('crisislink-org-session', JSON.stringify({ orgCode }))
@@ -448,7 +450,7 @@ const loadListings = async () => {
       state: {
         orgMode: true,
         orgCode,
-        orgName: `Organisation ${orgCode}`,
+        orgName: orgName || `Organisation ${orgCode}`,
       },
     })
   }
@@ -460,7 +462,7 @@ const loadListings = async () => {
         listing,
         orgMode: true,
         orgCode,
-        orgName: `Organisation ${orgCode}`,
+        orgName: orgName || `Organisation ${orgCode}`,
       },
     })
   }
@@ -633,9 +635,11 @@ const loadListings = async () => {
           )}
           context={(
             <WorkspaceContextCard
-              label={t('dashboard.organizationCodeLabel', 'Organisation code')}
-              value={orgCode}
-              supportingText={t('dashboard.orgCodeHint', 'Workspace identity for live listings and collection tools.')}
+              label={orgName ? t('dashboard.organizationNameLabel', 'Organisation') : t('dashboard.organizationCodeLabel', 'Organisation code')}
+              value={orgName || orgCode}
+              supportingText={orgName
+                ? `${t('dashboard.organizationCodeLabel', 'Code')}: ${orgCode}`
+                : t('dashboard.orgCodeHint', 'Workspace identity for live listings and collection tools.')}
               icon="groups"
             />
           )}

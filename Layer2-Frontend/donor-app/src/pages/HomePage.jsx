@@ -1,4 +1,3 @@
-import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '../components/LanguageSwitcher'
@@ -38,15 +37,14 @@ const HomePage = () => {
                   <h3 className="role-card-title donor">{t('home.donor.title')}</h3>
                   <p className="role-card-desc">{t('home.donor.description')}</p>
                 </div>
-                <button
-                  className="role-btn donor"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    navigate('/register/donor')
-                  }}
-                >
-                  {t('home.donor.button')}
-                </button>
+                <div className="role-card-cta-stack">
+                  <button
+                    className="role-btn donor"
+                    onClick={(e) => { e.stopPropagation(); navigate('/register/donor') }}
+                  >
+                    {t('home.donor.button')}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -60,15 +58,14 @@ const HomePage = () => {
                   <h3 className="role-card-title org">{t('home.organization.title')}</h3>
                   <p className="role-card-desc">{t('home.organization.description')}</p>
                 </div>
-                <button
-                  className="role-btn org"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    navigate('/register/org')
-                  }}
-                >
-                  {t('home.organization.button')}
-                </button>
+                <div className="role-card-cta-stack">
+                  <button
+                    className="role-btn org"
+                    onClick={(e) => { e.stopPropagation(); navigate('/register/org') }}
+                  >
+                    {t('home.organization.button')}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
