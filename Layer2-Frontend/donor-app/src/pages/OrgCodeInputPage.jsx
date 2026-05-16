@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import '../styles/OrgCodeInputPage.css'
+import logoUrl from '../assets/outbackshare-logo.png'
 
 const ORG_SESSION_KEY = 'crisislink-org-session'
 
@@ -46,7 +47,12 @@ const OrgCodeInputPage = () => {
             <span className="material-symbols-outlined">groups</span>
           </div>
 
-          <div className="org-code-brand">{t('appName')}</div>
+          <img
+            src={logoUrl}
+            alt={t('appName')}
+            className="org-code-brand"
+            style={{ height: '52px', width: 'auto', display: 'block', margin: '0 auto 0.5rem' }}
+          />
 
           <h1 className="org-code-title">{t('orgCode.title')}</h1>
           <p className="org-code-desc">{t('orgCode.subtitle')}</p>

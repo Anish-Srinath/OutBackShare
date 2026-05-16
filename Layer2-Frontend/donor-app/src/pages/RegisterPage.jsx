@@ -13,6 +13,7 @@ import {
 } from '../utils/codeGeneration'
 import { registerUser, checkCodeAvailability } from '../services/api'
 import '../styles/RegisterPage.css'
+import logoUrl from '../assets/outbackshare-logo.png'
 
 const sanitiseText = (v) => v.replace(/[<>"'`;]/g, '').slice(0, 500)
 const sanitiseCodeInput = (v) => v.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20)
@@ -222,7 +223,12 @@ const RegisterPage = () => {
           <div className={`register-icon-circle ${color}`}>
             <span className="material-symbols-outlined">{icon}</span>
           </div>
-          <div className="register-brand">OutBackShare</div>
+          <img
+            src={logoUrl}
+            alt="OutBackShare"
+            className="register-brand"
+            style={{ height: '52px', width: 'auto', display: 'block', margin: '0 auto 0.25rem' }}
+          />
 
           {/* ── SIGN IN ── */}
           {step === 'signin' && (

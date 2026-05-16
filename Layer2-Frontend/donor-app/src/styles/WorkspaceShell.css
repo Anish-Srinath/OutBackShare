@@ -61,6 +61,12 @@
   z-index: 1;
 }
 
+.workspace-header__brand-logo {
+  height: 38px;
+  width: auto;
+  display: block;
+}
+
 .workspace-header__brand {
   font-family: var(--font-headline);
   font-size: 1.4rem;

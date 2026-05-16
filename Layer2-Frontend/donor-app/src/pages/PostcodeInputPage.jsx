@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { saveDonorPostcode } from '../utils/donorPostcode'
 import '../styles/PostcodeInputPage.css'
+import logoUrl from '../assets/outbackshare-logo.png'
 
 const PostcodeInputPage = () => {
   const navigate = useNavigate()
@@ -42,7 +43,12 @@ const PostcodeInputPage = () => {
             <span className="material-symbols-outlined">volunteer_activism</span>
           </div>
 
-          <div className="postcode-brand">{t('appName')}</div>
+          <img
+            src={logoUrl}
+            alt={t('appName')}
+            className="postcode-brand"
+            style={{ height: '52px', width: 'auto', display: 'block', margin: '0 auto 0.5rem' }}
+          />
 
           <h1 className="postcode-title">{t('postcode.title')}</h1>
           <p className="postcode-desc">{t('postcode.subtitle')}</p>

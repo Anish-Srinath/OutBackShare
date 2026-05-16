@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 import '../styles/HomePage.css'
+import logoUrl from '../assets/outbackshare-logo.png'
 
 const HomePage = () => {
   const navigate = useNavigate()
@@ -11,7 +12,12 @@ const HomePage = () => {
     <div className="home-page">
       <div className="home-shell">
         <header className="home-header">
-          <h1 className="brand-name">{t('appName')}</h1>
+          <img
+            src={logoUrl}
+            alt={t('appName')}
+            className="brand-name brand-logo"
+            style={{ height: 'clamp(72px, 11vw, 128px)', width: 'auto', display: 'block' }}
+          />
           <LanguageSwitcher />
         </header>
 

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { getSavedDonorPostcode, saveDonorPostcode } from '../utils/donorPostcode'
 import '../styles/PostFeedPage.css'
 import '../styles/DonorDashboardPage.css'
+import logoUrl from '../assets/outbackshare-logo.png'
 
 const DonorDashboardPage = () => {
   const navigate = useNavigate()
@@ -35,8 +36,18 @@ const DonorDashboardPage = () => {
     <div className="donor-dashboard-page donor-role-page">
       <header className="navbar donor-navbar">
         <div className="navbar-inner donor-navbar-inner">
-          <button className="brand-home-btn" type="button" onClick={() => navigate('/')}>
-            <span className="brand-home-title">{t('appName')}</span>
+          <button
+            className="brand-home-btn"
+            type="button"
+            onClick={() => navigate('/')}
+            aria-label={t('appName')}
+          >
+            <img
+              src={logoUrl}
+              alt={t('appName')}
+              className="brand-home-logo"
+              style={{ height: '40px', width: 'auto', display: 'block' }}
+            />
           </button>
 
           <div className="nav-actions donor-nav-actions">

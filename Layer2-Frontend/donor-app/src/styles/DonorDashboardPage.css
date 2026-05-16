@@ -1,3 +1,42 @@
+.brand-home-logo {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+.language-btn-wrapper {
+  position: relative;
+}
+
+.language-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #E8E4DD;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  overflow: hidden;
+  z-index: 100;
+  min-width: 110px;
+}
+
+.language-menu button {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 0.875rem;
+  color: #1A1A1A;
+  cursor: pointer;
+}
+
+.language-menu button:hover {
+  background: #F5F5F0;
+}
+
 .donor-dashboard-page {
   min-height: 100vh;
   background:

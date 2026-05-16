@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import '../styles/WorkspaceShell.css'
+import logoUrl from '../assets/outbackshare-logo.png'
 
 const WorkspaceHeader = ({ role = 'org', onBrandClick, onBackClick = null, utilityContent = null, showLanguage = true }) => {
   const { t, i18n } = useTranslation()
@@ -27,8 +28,18 @@ const WorkspaceHeader = ({ role = 'org', onBrandClick, onBackClick = null, utili
             </button>
           ) : null}
 
-          <button className="workspace-header__brand-btn" type="button" onClick={onBrandClick}>
-            <span className="workspace-header__brand">{t('appName')}</span>
+          <button
+            className="workspace-header__brand-btn"
+            type="button"
+            onClick={onBrandClick}
+            aria-label={t('appName')}
+          >
+            <img
+              src={logoUrl}
+              alt={t('appName')}
+              className="workspace-header__brand-logo"
+              style={{ height: '38px', width: 'auto', display: 'block' }}
+            />
           </button>
         </div>
 
