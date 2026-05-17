@@ -4,9 +4,8 @@ import { useTranslation } from 'react-i18next'
 import PostcodeMap from '../components/PostcodeMap'
 import { predictionApiClient } from '../services/api'
 import suburbLookup from '../data/vic_postcode_suburbs.json'
-import OrgFeatureNav from '../components/OrgFeatureNav'
-import WorkspaceHeader from '../components/WorkspaceHeader'
 import '../styles/LiveListingBoard.css'
+import logoUrl from '../assets/outbackshare-logo.png'
 
 function suburbName(postcode) {
   return suburbLookup[String(postcode)] || `Postcode ${postcode}`
@@ -192,18 +191,47 @@ const OrgAlertsPage = () => {
   const selectedAlertTone = getDemandToneMeta(selectedAlert?.demandLift)
   const selectedConfidenceLevel = getConfidenceLevel(selectedAlert?.confidence)
 
+  const ORG_NAV = [
+    { label: 'Listings',       path: '/org/listings',      active: false },
+    { label: 'Demand Alerts',  path: '/org/alerts',        active: true  },
+    { label: 'Supply Gaps',    path: '/org/gaps',          active: false },
+    { label: 'Around Me',      path: '/org/coverage-map',  active: false },
+  ]
+
   return (
-    <div className="live-listing-board org-role-board org-role-page">
-      <WorkspaceHeader
-        role="org"
-        onBackClick={() => navigate('/org/listings', { state: { orgCode } })}
-        onBrandClick={() => navigate('/org/listings', { state: { orgCode } })}
-      />
+    <div style={{ minHeight: '100vh', background: '#f9f9f6', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      {/* Frosted-glass header */}
+      <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(249,249,246,0.88)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #e8e4dd', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: 68 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <button type="button" onClick={() => navigate('/org/listings', { state: { orgCode } })}
+            style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#404943' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#eeeeeb'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>arrow_back</span>
+          </button>
+          <button type="button" onClick={() => navigate('/org/listings', { state: { orgCode } })} style={{ border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}>
+            <img src={logoUrl} alt="OutBackShare" style={{ height: 30, width: 'auto', objectFit: 'contain', alignSelf: 'flex-start' }} />
+          </button>
+        </div>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {ORG_NAV.map(tab => (
+            <button key={tab.label} type="button" onClick={() => navigate(tab.path, { state: { orgCode } })}
+              style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: tab.active ? '#0f5238' : 'transparent', color: tab.active ? '#fff' : '#404943', fontWeight: tab.active ? 700 : 500, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}
+              onMouseEnter={e => { if (!tab.active) e.currentTarget.style.background = '#eeeeeb' }}
+              onMouseLeave={e => { if (!tab.active) e.currentTarget.style.background = 'transparent' }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f4f4f1', border: '1px solid #e8e4dd', borderRadius: 999, padding: '5px 12px' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#707973' }}>groups</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#404943' }}>{orgCode}</span>
+        </div>
+      </header>
 
       <main className="feed-content org-feed-content">
-        <div className="workspace-nav-row org-area-nav-row">
-          <OrgFeatureNav active="alerts" orgCode={orgCode} />
-        </div>
 
         {/* Compact hero */}
         <section className="org-page-intro org-hero-card">

@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import DonorFeatureNav from '../components/DonorFeatureNav'
-import WorkspaceHeader from '../components/WorkspaceHeader'
 import PostcodeMap from '../components/PostcodeMap'
+import logoUrl from '../assets/outbackshare-logo.png'
 import { predictionApiClient } from '../services/api'
 import apiClient from '../services/api'
 import { getSavedDonorPostcode } from '../utils/donorPostcode'
@@ -188,14 +187,51 @@ export default function HotspotMap() {
     return haversineKm(userCoords, selectedCoords).toFixed(0)
   }, [donorPostcode, selected])
 
-  return (
-    <div className="live-listing-board donor-role-board donor-role-page">
-      <WorkspaceHeader role="donor" onBackClick={() => navigate(-1)} />
-      <main className="feed-content donor-feed-content">
-        <div className="workspace-nav-row donor-area-nav-row">
-          <DonorFeatureNav active="hotspots" />
-        </div>
+  const ORG_PATHS = new Set(['/org/intelligence', '/org/coverage-map'])
+  const donorNavState = { fromDonor: true, returnPath: '/donor/hotspots' }
 
+  const NAV_TABS = [
+    { label: 'My Listings',       path: '/donor/listings',    active: false },
+    { label: 'Hotspot Map',       path: '/donor/hotspots',    active: true  },
+    { label: 'Area Intelligence', path: '/org/intelligence',  active: false },
+    { label: 'Around Me',         path: '/org/coverage-map',  active: false },
+  ]
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#f9f9f6', fontFamily: 'Inter, system-ui, sans-serif' }}>
+      {/* New frosted-glass header */}
+      <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(249,249,246,0.88)', backdropFilter: 'blur(16px)', borderBottom: '1px solid #e8e4dd', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: 68 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <button type="button" onClick={() => navigate(-1)}
+            style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#404943', transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#eeeeeb'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>arrow_back</span>
+          </button>
+          <button type="button" onClick={() => navigate('/donor/listings')} style={{ border: 'none', background: 'transparent', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <img src={logoUrl} alt="OutBackShare" style={{ height: 30, width: 'auto', objectFit: 'contain', alignSelf: 'flex-start' }} />
+          </button>
+        </div>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {NAV_TABS.map(tab => (
+            <button key={tab.label} type="button" onClick={() => ORG_PATHS.has(tab.path)
+              ? navigate(tab.path, { state: donorNavState })
+              : navigate(tab.path)}
+              style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: tab.active ? '#0f5238' : 'transparent', color: tab.active ? '#fff' : '#404943', fontWeight: tab.active ? 700 : 500, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s, color 0.15s' }}
+              onMouseEnter={e => { if (!tab.active) e.currentTarget.style.background = '#eeeeeb' }}
+              onMouseLeave={e => { if (!tab.active) e.currentTarget.style.background = 'transparent' }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f4f4f1', border: '1px solid #e8e4dd', borderRadius: 999, padding: '5px 12px' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#707973' }}>local_fire_department</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#404943' }}>Hotspot Map</span>
+        </div>
+      </header>
+      <main className="feed-content donor-feed-content">
       <section style={{ display: 'flex', height: MAP_HEIGHT }}>
         {/* Map */}
         <div style={{ flex: 1, position: 'relative', minHeight: 0, minWidth: 0 }}>

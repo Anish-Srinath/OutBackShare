@@ -1,10 +1,11 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { getSavedDonorPostcode } from '../utils/donorPostcode'
 import WorkspaceFeatureNav from './WorkspaceFeatureNav'
 const DonorFeatureNav = ({ active = 'listings', postcode = '' }) => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { t } = useTranslation()
 
   const effectivePostcode = String(postcode || getSavedDonorPostcode() || '').trim()
@@ -25,10 +26,10 @@ const DonorFeatureNav = ({ active = 'listings', postcode = '' }) => {
           onClick: () => goTo('/donor/listings'),
         },
         {
-          key: 'hotspots',
-          label: t('donorNav.hotspots', 'Hotspots'),
-          active: active === 'hotspots',
-          onClick: () => goTo('/donor/hotspots'),
+          key: 'intelligence',
+          label: t('donorNav.intelligence', 'Area Intelligence'),
+          active: active === 'intelligence',
+          onClick: () => navigate('/org/intelligence', { state: { fromDonor: true, returnPath: location.pathname } }),
         },
       ]}
     />

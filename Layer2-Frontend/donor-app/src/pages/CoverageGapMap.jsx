@@ -1,290 +1,297 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import OrgFeatureNav from '../components/OrgFeatureNav'
-import WorkspaceHeader from '../components/WorkspaceHeader'
-import PostcodeMap from '../components/PostcodeMap'
+import ChoroplethMap from '../components/ChoroplethMap'
 import { predictionApiClient } from '../services/api'
 import suburbLookup from '../data/vic_postcode_suburbs.json'
-import '../styles/LiveListingBoard.css'
+import logoUrl from '../assets/outbackshare-logo.png'
+import textureImg from '../assets/post-food-texture.jpg'
 
+// Matches backend _risk_label() thresholds
 const RISK_COLORS = {
-  high: '#e53e3e',
-  'medium-high': '#dd6b20',
-  'medium-low': '#d69e2e',
-  low: '#38a169',
-  none: '#a0aec0',
+  critical:      '#e53030',
+  high:          '#e53030',
+  'medium-high': '#e8711a',
+  'medium-low':  '#d69e2e',
+  low:           '#1a9c67',
+  none:          '#94a3b8',
 }
 
-function riskColor(score) {
-  if (score == null) return RISK_COLORS.none
-  if (score >= 0.75) return RISK_COLORS.high
-  if (score >= 0.5) return RISK_COLORS['medium-high']
-  if (score >= 0.25) return RISK_COLORS['medium-low']
-  return RISK_COLORS.low
+function riskColorFromLabel(label) {
+  return RISK_COLORS[label] || RISK_COLORS.none
 }
 
-function riskLabel(score) {
-  if (score == null) return 'No data'
-  if (score >= 0.75) return 'High'
-  if (score >= 0.5) return 'Medium-high'
-  if (score >= 0.25) return 'Medium-low'
-  return 'Low'
+function toneFromLabel(label) {
+  if (!label) return 'watch'
+  if (label === 'high')        return 'critical'
+  if (label === 'medium-high') return 'high'
+  if (label === 'medium-low')  return 'watch'
+  return 'healthy'
 }
 
 const LEGEND = [
-  { key: 'high', color: RISK_COLORS.high },
-  { key: 'medium-high', color: RISK_COLORS['medium-high'] },
-  { key: 'medium-low', color: RISK_COLORS['medium-low'] },
-  { key: 'low', color: RISK_COLORS.low },
-  { key: 'none', color: RISK_COLORS.none },
+  { label: 'High (≥0.75)',         color: RISK_COLORS.high          },
+  { label: 'Medium-high (≥0.50)',  color: RISK_COLORS['medium-high'] },
+  { label: 'Medium-low (≥0.25)',   color: RISK_COLORS['medium-low']  },
+  { label: 'Low (<0.25)',          color: RISK_COLORS.low            },
+  { label: 'No score yet',         color: RISK_COLORS.none           },
+]
+
+const ORG_NAV = [
+  { label: 'Listings',          path: '/org/listings'     },
+  { label: 'Area Intelligence', path: '/org/intelligence' },
+  { label: 'Around Me',         path: '/org/coverage-map', active: true },
 ]
 
 export default function CoverageGapMap() {
-  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
-  const [riskData, setRiskData] = useState({})
-  const [selectedPostcode, setSelectedPostcode] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [showInfoBanner, setShowInfoBanner] = useState(false)
+
+  // Capture donor context on first render — persists across tab/filter changes within page
+  const fromDonor      = useRef(location.state?.fromDonor || false)
+  const donorReturn    = useRef(location.state?.returnPath || '/donor/listings')
+
+  const [riskData, setRiskData]         = useState([])   // raw API rows
+  const [selected, setSelected]         = useState(null) // postcode string
+  const [loading, setLoading]           = useState(true)
+  const [showInfo, setShowInfo]         = useState(false)
+
   const savedOrgSession = (() => {
-    try {
-      return JSON.parse(window.localStorage.getItem('crisislink-org-session') || '{}')
-    } catch {
-      return {}
-    }
+    try { return JSON.parse(window.localStorage.getItem('crisislink-org-session') || '{}') }
+    catch { return {} }
   })()
   const orgCode = location.state?.orgCode || savedOrgSession.orgCode || 'HCFB-2841'
 
+  // /predictions/all-risk-scores returns ALL postcodes across all risk bands
+  // (unlike /intelligence/supply-gaps which filters HAVING risk > 0.5)
   useEffect(() => {
-    predictionApiClient.get('/intelligence/supply-gaps')
-      .then(res => {
-        const map = {}
-        for (const item of (res.data || [])) map[item.postcode] = item
-        setRiskData(map)
-      })
+    let cancelled = false
+    setLoading(true)
+    predictionApiClient.get('/predictions/all-risk-scores')
+      .then(res => { if (!cancelled) setRiskData(res.data || []) })
       .catch(() => {})
-      .finally(() => setLoading(false))
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
   }, [])
 
+  // Build lookup: postcode → row
+  const riskMap = useMemo(() => {
+    const m = {}
+    for (const row of riskData) m[String(row.postcode)] = row
+    return m
+  }, [riskData])
+
+  // Map zones — all rows, colour by risk_label from backend
   const mapZones = useMemo(() =>
-    Object.values(riskData).map(item => ({
-      postcode: item.postcode,
-      suburb: suburbLookup[String(item.postcode)] || String(item.postcode),
-      tone: item.demand_risk_score >= 0.75 ? 'critical'
-          : item.demand_risk_score >= 0.5 ? 'high'
-          : item.demand_risk_score >= 0.25 ? 'watch'
-          : 'healthy',
-      metric: `Risk: ${(item.demand_risk_score * 100).toFixed(0)}%`,
+    riskData.map(item => ({
+      postcode: String(item.postcode),
+      suburb:   suburbLookup[String(item.postcode)] || String(item.postcode),
+      tone:     toneFromLabel(item.risk_label),
+      metric:   `${item.risk_label ? item.risk_label.charAt(0).toUpperCase() + item.risk_label.slice(1) : 'No score'} risk — ${(item.demand_risk_score * 100).toFixed(0)}%`,
     }))
   , [riskData])
 
-  const selected = selectedPostcode ? { postcode: selectedPostcode, ...riskData[selectedPostcode] } : null
+  // Derived counts
+  const atRiskCount = useMemo(() => riskData.filter(d => d.demand_risk_score >= 0.5).length, [riskData])
+  const totalCount  = riskData.length
+  const selectedRow = selected ? riskMap[selected] : null
 
-  const atRiskCount = Object.keys(riskData).length
-
-  const MAP_HEIGHT = '58vh'
+  function goBack() {
+    if (fromDonor.current) navigate(donorReturn.current)
+    else navigate('/org/listings', { state: { orgCode } })
+  }
 
   return (
-    <div className="live-listing-board org-role-board org-role-page">
-      <WorkspaceHeader
-        role="org"
-        onBackClick={() => navigate('/org/listings', { state: { orgCode } })}
-        onBrandClick={() => navigate('/org/listings', { state: { orgCode } })}
-      />
+    <div style={{ minHeight: '100vh', background: '#1b4332', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
 
-      <main className="feed-content org-feed-content">
-        <div className="workspace-nav-row org-area-nav-row">
-          <OrgFeatureNav active="coverage-map" orgCode={orgCode} />
+      {/* Bloom layers */}
+      <div style={{ position: 'fixed', top: '10%', left: '15%', width: 520, height: 520, borderRadius: '50%', background: 'rgba(45,106,79,0.28)', filter: 'blur(90px)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'fixed', bottom: '15%', right: '10%', width: 420, height: 420, borderRadius: '50%', background: 'rgba(45,106,79,0.22)', filter: 'blur(80px)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'fixed', top: '50%', left: '50%', width: 360, height: 360, borderRadius: '50%', background: 'rgba(26,156,103,0.12)', filter: 'blur(100px)', transform: 'translate(-50%,-50%)', pointerEvents: 'none', zIndex: 0 }} />
+
+      {/* Texture overlay */}
+      <div style={{ position: 'fixed', inset: 0, backgroundImage: `url(${textureImg})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.05, pointerEvents: 'none', zIndex: 0 }} />
+
+      <div style={{ position: 'relative', zIndex: 1 }}>
+
+        {/* ── Header ── */}
+        <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(27,67,50,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 48px', height: 68 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <button type="button" onClick={goBack}
+              style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.75)' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 22 }}>arrow_back</span>
+            </button>
+            <button type="button" onClick={goBack} style={{ border: 'none', background: 'transparent', padding: 0, cursor: 'pointer' }}>
+              <img src={logoUrl} alt="OutBackShare" style={{ height: 30, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)', opacity: 0.9 }} />
+            </button>
+          </div>
+
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            {ORG_NAV.map(tab => (
+              <button key={tab.label} type="button"
+                onClick={() => navigate(tab.path, { state: { orgCode, fromDonor: fromDonor.current, returnPath: donorReturn.current } })}
+                style={{
+                  padding: '7px 18px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                  background: tab.active ? 'rgba(149,212,179,0.22)' : 'transparent',
+                  color: tab.active ? '#95d4b3' : 'rgba(255,255,255,0.6)',
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { if (!tab.active) { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#fff' } }}
+                onMouseLeave={e => { if (!tab.active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)' } }}
+              >{tab.label}</button>
+            ))}
+          </nav>
+
+          <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 8, padding: '4px 12px', fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
+            {orgCode}
+          </div>
+        </header>
+
+        {/* ── Page heading ── */}
+        <div style={{ padding: '40px 48px 20px' }}>
+          <h1 style={{ fontSize: 36, fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>Around Me</h1>
+          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
+            Live demand risk signals for all scored postcodes · {totalCount} areas loaded
+          </p>
         </div>
 
-        <section className="org-page-intro org-hero-card">
-          <div className="org-page-heading-row">
-            <div className="org-page-heading">
-              <h1 className="board-title org-page-title">
-                {t('dashboard.workspaceTitle', 'Organisation workspace')}
-              </h1>
-              <p className="org-page-subtitle">
-                {t('dashboard.workspaceSubtitle', 'Review live supply and demand signals for nearby service areas.')}
-              </p>
-              <div className="org-page-meta org-page-meta-pill">
-                <span className="material-symbols-outlined">domain</span>
-                <span>{t('dashboard.signedInAs', { orgCode, defaultValue: `Signed in as ${orgCode}` })}</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Info banner */}
-        <section style={{
-          background: '#e0f2fe',
-          border: '1px solid #bae6fd',
-          borderRadius: '8px',
-          padding: '0.75rem 1rem',
-          marginBottom: '1rem',
-        }}>
+        {/* ── Info banner ── */}
+        <div style={{ margin: '0 48px 20px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(149,212,179,0.2)', borderRadius: 12, padding: '12px 18px' }}>
           <button
-            onClick={() => setShowInfoBanner(!showInfoBanner)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#0369a1',
-              fontWeight: 600,
-              fontSize: '0.9rem',
-              width: '100%',
-              textAlign: 'left',
-              padding: 0,
-            }}
-            aria-expanded={showInfoBanner}
+            onClick={() => setShowInfo(!showInfo)}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', color: '#95d4b3', fontWeight: 600, fontSize: '0.88rem', width: '100%', textAlign: 'left', padding: 0 }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '1.2rem', flexShrink: 0 }}>info</span>
-            <span>{t('coverageMap.aroundMeTitle', 'Around me – what this shows')}</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>info</span>
+            <span>Around me – what this shows</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginLeft: 'auto', color: 'rgba(255,255,255,0.4)' }}>{showInfo ? 'expand_less' : 'expand_more'}</span>
           </button>
-          {showInfoBanner && (
-            <p style={{
-              marginTop: '0.75rem',
-              fontSize: '0.85rem',
-              color: '#0369a1',
-              lineHeight: 1.5,
-              margin: '0.75rem 0 0 0',
-            }}>
-              {t('coverageMap.aroundMeDescription', 'Shows what food is currently available near your organisation. Use it to see which food types and quantities are on offer in your local area, so you can avoid duplicating supply.')}
+          {showInfo && (
+            <p style={{ marginTop: 10, fontSize: '0.83rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>
+              Shows demand risk across all scored postcodes — from high risk (red) to low risk (green). Use it to identify where food supply is needed and where you can avoid duplicating existing supply.
             </p>
           )}
-        </section>
-
-        <section style={{ display: 'flex', height: MAP_HEIGHT }}>
-        {/* Map area */}
-        <div style={{ flex: 1, position: 'relative' }}>
-          {loading && (
-            <div style={{
-              position: 'absolute', inset: 0, display: 'flex',
-              alignItems: 'center', justifyContent: 'center', zIndex: 10,
-              background: 'rgba(255,255,255,0.85)',
-            }}>
-              <p style={{ color: '#4a5568' }}>{t('common.loading')}</p>
-            </div>
-          )}
-          <PostcodeMap
-            zones={mapZones}
-            selectedPostcode={selectedPostcode}
-            onSelect={setSelectedPostcode}
-            height={MAP_HEIGHT}
-            defaultCenter={[-36.8, 144.9]}
-            defaultZoom={7}
-          />
         </div>
 
-        {/* Side panel */}
-        <div style={{
-          width: '280px', background: '#fff', borderLeft: '1px solid #e2e8f0',
-          overflowY: 'auto', padding: '1rem', display: 'flex',
-          flexDirection: 'column', gap: '1rem',
-        }}>
-          {/* Legend */}
-          <div>
-            <p style={{ fontSize: '0.7rem', fontWeight: 600, color: '#718096', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
-              {t('coverageMap.legend', 'Risk level')}
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {LEGEND.map(({ key, color }) => (
-                <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: 14, height: 14, borderRadius: 3, background: color, flexShrink: 0 }} />
-                  <span style={{ fontSize: '0.75rem', color: '#4a5568' }}>
-                    {key === 'high' ? 'High (≥0.75)' :
-                     key === 'medium-high' ? 'Medium-high (≥0.50)' :
-                     key === 'medium-low' ? 'Medium-low (≥0.25)' :
-                     key === 'low' ? 'Low (<0.25)' : 'No score yet'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* ── Map + Side panel ── */}
+        <div style={{ display: 'flex', margin: '0 48px 48px', gap: 0, borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(149,212,179,0.15)', height: '62vh', minHeight: 480 }}>
 
-          {/* Summary count */}
-          <div>
-            <p style={{ fontSize: '0.7rem', fontWeight: 600, color: '#718096', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
-              {t('coverageMap.summary', 'At-risk postcodes')}
-            </p>
-            <p style={{ fontSize: '1.75rem', fontWeight: 700, color: '#e53e3e', lineHeight: 1 }}>{atRiskCount}</p>
-            <p style={{ fontSize: '0.72rem', color: '#a0aec0', marginTop: '2px' }}>
-              {t('coverageMap.riskCountHint', 'with demand risk > 0.5')}
-            </p>
-          </div>
-
-          {/* Selected postcode detail */}
-          {selected ? (
-            <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: '0.95rem' }}>
-                    {suburbLookup[String(selected.postcode)] || `Postcode ${selected.postcode}`}
-                  </p>
-                  <p style={{ fontSize: '0.72rem', color: '#718096' }}>{selected.postcode}</p>
-                </div>
-                <button
-                  onClick={() => setSelectedPostcode(null)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a0aec0', fontSize: '1rem' }}
-                  aria-label={t('common.close')}
-                >✕</button>
+          {/* Map */}
+          <div style={{ flex: 1, position: 'relative' }}>
+            {loading && (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, background: 'rgba(27,67,50,0.85)' }}>
+                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>Loading all risk zones…</p>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <Row label={t('coverageMap.riskScore', 'Demand risk')}>
-                  <span style={{ color: riskColor(selected.demand_risk_score), fontWeight: 600 }}>
-                    {selected.demand_risk_score != null
-                      ? `${(selected.demand_risk_score * 100).toFixed(0)}% — ${riskLabel(selected.demand_risk_score)}`
-                      : t('coverageMap.noScore', 'Not scored yet')}
-                  </span>
-                </Row>
-                <Row label="Data source">
-                  <span style={{
-                    fontSize: '0.7rem', fontWeight: 600, padding: '2px 7px', borderRadius: '999px',
-                    background: selected.cold_start ? '#fff3cd' : selected.data_source === 'ai_forecast' ? '#e0f5ec' : '#edf2f7',
-                    color: selected.cold_start ? '#7d5a00' : selected.data_source === 'ai_forecast' ? '#1a7c54' : '#4a5568',
-                  }}>
-                    {selected.cold_start ? '⏳ Learning' : selected.data_source === 'ai_forecast' ? '✦ AI forecast' : '⊖ Rule-based'}
-                  </span>
-                </Row>
-                {selected.irsd_score != null && (
-                  <Row label={t('coverageMap.seifaScore', 'SEIFA IRSD')}>
-                    <span style={{ fontWeight: 500 }}>{selected.irsd_score}</span>
-                  </Row>
-                )}
-                {selected.active_listings != null && (
-                  <Row label={t('coverageMap.activeListings', 'Active listings')}>
-                    <span style={{ fontWeight: 500, color: selected.active_listings === 0 ? '#e53e3e' : '#38a169' }}>
-                      {selected.active_listings}
+            )}
+            <ChoroplethMap
+              zones={mapZones}
+              selectedPostcode={selected || ''}
+              onSelect={setSelected}
+              height="100%"
+              defaultCenter={[-36.8, 144.9]}
+              defaultZoom={7}
+            />
+          </div>
+
+          {/* Side panel */}
+          <div style={{ width: 280, background: 'rgba(27,67,50,0.92)', borderLeft: '1px solid rgba(149,212,179,0.15)', overflowY: 'auto', padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+            {/* Legend — colours match ChoroplethMap TONE_FILL exactly */}
+            <div>
+              <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>
+                Risk level
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                {LEGEND.map(({ label, color }) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ width: 14, height: 14, borderRadius: 3, background: color, flexShrink: 0, opacity: 0.9 }} />
+                    <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)' }}>{label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Summary */}
+            <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '14px 16px' }}>
+              <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
+                Coverage summary
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <div>
+                  <p style={{ fontSize: '2rem', fontWeight: 700, color: '#fc9174', lineHeight: 1 }}>{atRiskCount}</p>
+                  <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', marginTop: 3 }}>at-risk zones (≥0.50)</p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ fontSize: '1.2rem', fontWeight: 700, color: '#95d4b3', lineHeight: 1 }}>{totalCount}</p>
+                  <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', marginTop: 3 }}>total zones</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Selected postcode detail */}
+            {selectedRow ? (
+              <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(149,212,179,0.2)', borderRadius: 10, padding: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div>
+                    <p style={{ fontWeight: 700, fontSize: '0.95rem', color: '#fff', margin: 0 }}>
+                      {suburbLookup[String(selectedRow.postcode)] || `Postcode ${selectedRow.postcode}`}
+                    </p>
+                    <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', margin: '2px 0 0' }}>{selectedRow.postcode}</p>
+                  </div>
+                  <button
+                    onClick={() => setSelected(null)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', lineHeight: 1, padding: 4, flexShrink: 0 }}
+                  >✕</button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                  <Row label="Demand risk">
+                    <span style={{ color: riskColorFromLabel(selectedRow.risk_label || toneFromLabel(selectedRow.risk_label)), fontWeight: 700, fontSize: '0.82rem' }}>
+                      {(selectedRow.demand_risk_score * 100).toFixed(0)}%
+                      {' — '}
+                      {selectedRow.risk_label
+                        ? selectedRow.risk_label.charAt(0).toUpperCase() + selectedRow.risk_label.slice(1)
+                        : 'No score'}
                     </span>
                   </Row>
-                )}
-                {selected.total_supply != null && (
-                  <Row label={t('coverageMap.totalSupply', 'Total supply')}>
-                    <span style={{ fontWeight: 500 }}>{selected.total_supply} portions</span>
+                  {selectedRow.irsd_score != null && (
+                    <Row label="SEIFA IRSD">
+                      <span style={{ fontWeight: 600, color: '#fff', fontSize: '0.82rem' }}>{selectedRow.irsd_score}</span>
+                    </Row>
+                  )}
+                  <Row label="Active listings">
+                    <span style={{ fontWeight: 700, color: selectedRow.active_listings === 0 ? '#fc9174' : '#95d4b3', fontSize: '0.82rem' }}>
+                      {selectedRow.active_listings}
+                    </span>
                   </Row>
-                )}
+                  <Row label="Total supply">
+                    <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.8)', fontSize: '0.82rem' }}>
+                      {selectedRow.total_supply} portions
+                    </span>
+                  </Row>
+                  {selectedRow.regional_category && (
+                    <Row label="Region">
+                      <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)' }}>{selectedRow.regional_category}</span>
+                    </Row>
+                  )}
+                </div>
               </div>
-            </div>
-          ) : (
-            <p style={{ fontSize: '0.75rem', color: '#a0aec0', fontStyle: 'italic' }}>
-              {t('coverageMap.clickHint', 'Click a postcode on the map to see details.')}
-            </p>
-          )}
+            ) : (
+              <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', fontStyle: 'italic', textAlign: 'center', marginTop: 8 }}>
+                Click any postcode on the map to see its details
+              </p>
+            )}
+          </div>
         </div>
-        </section>
-      </main>
+      </div>
     </div>
   )
 }
 
 function Row({ label, children }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem' }}>
-      <span style={{ color: '#718096' }}>{label}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', gap: 8 }}>
+      <span style={{ color: 'rgba(255,255,255,0.5)', flexShrink: 0 }}>{label}</span>
       {children}
     </div>
   )

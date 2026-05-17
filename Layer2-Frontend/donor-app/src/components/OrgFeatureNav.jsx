@@ -23,16 +23,10 @@ const OrgFeatureNav = ({ active = 'listings', orgCode = '' }) => {
           onClick: () => goTo('/org/listings'),
         },
         {
-          key: 'alerts',
-          label: t('common.alerts'),
-          active: active === 'alerts',
-          onClick: () => goTo('/org/alerts'),
-        },
-        {
-          key: 'gaps',
-          label: t('dashboard.coverageInsights.navLabel', 'Supply gaps'),
-          active: active === 'gaps',
-          onClick: () => goTo('/org/gaps'),
+          key: 'intelligence',
+          label: 'Area Intelligence',
+          active: active === 'intelligence',
+          onClick: () => goTo('/org/intelligence'),
         },
         {
           key: 'coverage-map',

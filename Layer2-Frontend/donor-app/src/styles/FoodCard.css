@@ -1,0 +1,508 @@
+/* =============================================================
+   FoodCard — unified card design for listings
+   Re-skins the existing .food-card / .donor-card / .org-card
+   classes used by PostFeedPage and LiveListingBoard.
+
+   States covered:
+     available, claimed, collected, expired (donor & org views)
+     posted (own listing — org view)
+
+   Loaded AFTER the page-level CSS in each consuming page, so
+   our rules cleanly override the legacy styling without
+   needing !important.
+   ============================================================= */
+
+/* ── Grid ─────────────────────────────────────────────── */
+.food-card-list,
+.live-feed-grid,
+.donor-listings-grid,
+.feed-grid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 720px) {
+  .food-card-list,
+  .live-feed-grid,
+  .donor-listings-grid,
+  .feed-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1080px) {
+  .food-card-list,
+  .live-feed-grid,
+  .donor-listings-grid,
+  .feed-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ── Card shell ───────────────────────────────────────── */
+.food-card {
+  width: 100%;
+  max-width: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: relative;
+  overflow: hidden;
+  align-self: stretch;
+  box-shadow: var(--shadow-xs);
+  transition:
+    border-color var(--dur) var(--ease),
+    box-shadow   var(--dur) var(--ease),
+    transform    var(--dur) var(--ease);
+}
+
+.food-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Subtle accent stripe along the top edge by role */
+.food-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: transparent;
+  pointer-events: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.food-card.donor-card::before   { background: var(--donor); opacity: 0.0; }
+.food-card.org-card::before     { background: var(--primary); opacity: 0.0; }
+
+/* Own-listing emphasis */
+.food-card.own-listing-card,
+.food-card.org-card--own {
+  border-color: rgba(45, 106, 79, 0.22);
+  background: linear-gradient(180deg, #ffffff 0%, #FAFCFA 100%);
+}
+
+.food-card.org-card--own::before {
+  background: var(--status-posted);
+  opacity: 0.7;
+}
+
+.food-card.own-listing-card::before {
+  background: var(--donor);
+  opacity: 0.7;
+}
+
+/* State accents on the stripe */
+.food-card--claimed::before,
+.food-card.org-card--claimed::before {
+  background: var(--status-claimed);
+  opacity: 0.75;
+}
+
+.food-card--collected::before,
+.food-card.org-card--collected::before {
+  background: var(--status-collected);
+  opacity: 0.75;
+}
+
+.food-card.org-card--expired,
+.food-card.food-card--expired {
+  background: #FCFBF8;
+  border-color: var(--border);
+  opacity: 0.92;
+}
+
+.food-card.org-card--expired::before {
+  background: var(--status-expired);
+  opacity: 0.6;
+}
+
+/* ── Image ────────────────────────────────────────────── */
+.food-card-image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: 240px;
+  height: auto;
+  object-fit: cover;
+  object-position: center 58%;
+  border-radius: var(--radius);
+  margin: 0;
+  background: var(--surface-sunk);
+}
+
+/* org variant uses a slightly squarer crop */
+.food-card.org-card .food-card-image {
+  aspect-ratio: 4 / 3;
+  max-height: 260px;
+  margin-bottom: 0;
+}
+
+/* ── Header ───────────────────────────────────────────── */
+.food-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.food-card.org-card .food-card-header {
+  display: block;
+}
+
+.donor-card-heading-stack,
+.org-card-heading-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.food-card-title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-h3);
+  line-height: var(--lh-h3);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+
+.food-card.org-card .food-card-title {
+  font-size: 22px;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: calc(1.25em * 2);
+}
+
+.food-card-source {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medium);
+  line-height: 1.45;
+}
+
+.donor-card-meta-row,
+.org-card-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.donor-card-time,
+.org-card-time {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--surface-sunk);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Category chip (smaller, restrained) ────────────── */
+.food-card-category {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--primary-pale);
+  color: var(--primary-dark);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.food-card.donor-card .food-card-category {
+  background: var(--donor-pale);
+  color: var(--donor-dark);
+}
+
+.donor-card-category-row,
+.org-card-category-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-2);
+}
+
+/* ── Status pills (existing classes — restyled to brief) ─ */
+.donor-card-status,
+.listing-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 0;
+  padding: 5px 10px 5px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  font-family: var(--font-sans);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin: 0;
+  width: fit-content;
+}
+
+.donor-card-status::before,
+.listing-status-pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+.donor-card-status--available,
+.listing-status-pill--available {
+  background: var(--status-available-bg);
+  color: var(--status-available);
+  border-color: rgba(45, 106, 79, 0.18);
+}
+
+.donor-card-status--claimed,
+.listing-status-pill--claimed {
+  background: var(--status-claimed-bg);
+  color: var(--status-claimed);
+  border-color: rgba(196, 139, 30, 0.28);
+}
+
+.donor-card-status--collected,
+.listing-status-pill--collected {
+  background: var(--status-collected-bg);
+  color: var(--status-collected);
+  border-color: rgba(17, 94, 89, 0.22);
+}
+
+.donor-card-status--expired,
+.listing-status-pill--expired {
+  background: var(--status-expired-bg);
+  color: var(--status-expired);
+  border-color: rgba(75, 85, 99, 0.22);
+}
+
+.listing-status-pill--posted {
+  background: var(--status-posted-bg);
+  color: var(--status-posted);
+  border-color: rgba(61, 64, 91, 0.22);
+}
+
+.listing-status-pill--warning {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border-color: rgba(196, 139, 30, 0.30);
+}
+
+/* ── Detail rows ─────────────────────────────────────── */
+.food-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--divider);
+}
+
+.food-card-detail-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  font-weight: var(--fw-medium);
+  padding: 2px 0;
+}
+
+.food-card-detail-row .material-symbols-outlined {
+  font-size: 18px;
+  color: var(--primary);
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+
+.food-card.donor-card .food-card-detail-row .material-symbols-outlined {
+  color: var(--donor-dark);
+}
+
+.food-card.org-card--expired .food-card-detail-row .material-symbols-outlined,
+.food-card--expired .food-card-detail-row .material-symbols-outlined {
+  color: var(--text-secondary);
+}
+
+/* ── Supporting panels (dietary / allergen / notes) ─── */
+.card-supporting-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.supporting-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface-sunk);
+  border: 1px solid var(--divider);
+  border-radius: var(--radius);
+}
+
+.supporting-panel-label {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.supporting-tag-list,
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  line-height: 1.2;
+}
+
+.tag-chip.tag-vegetarian   { background: #E8F5EA; color: #2D6A4F; border-color: rgba(45,106,79,.18); }
+.tag-chip.tag-vegan        { background: #DCEFE0; color: #1B5E3F; border-color: rgba(27,94,63,.20); }
+.tag-chip.tag-dairy-free,
+.tag-chip.tag-dairyfree    { background: #E6F0FA; color: #1F4F86; border-color: rgba(31,79,134,.18); }
+.tag-chip.tag-gluten-free,
+.tag-chip.tag-glutenfree   { background: #FBEFD2; color: #7A560A; border-color: rgba(196,139,30,.22); }
+.tag-chip.tag-halal        { background: #ECE7F4; color: #4B3D7A; border-color: rgba(75,61,122,.22); }
+.tag-chip.tag-non-veg,
+.tag-chip.tag-nonveg       { background: var(--donor-pale); color: var(--donor-dark); border-color: rgba(224,122,95,.22); }
+
+/* ── Actions ─────────────────────────────────────────── */
+.food-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: auto;
+}
+
+.org-card-actions--split {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.org-card-actions--split > * { flex: 1 1 0; min-width: 0; }
+
+.card-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px var(--space-4);
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease),
+              border-color    var(--dur) var(--ease),
+              color           var(--dur) var(--ease),
+              transform       var(--dur-fast) var(--ease),
+              box-shadow      var(--dur) var(--ease);
+}
+
+.card-action-btn:hover {
+  background: var(--surface-sunk);
+  border-color: var(--border-strong);
+}
+
+.card-action-btn:active { transform: translateY(0.5px); }
+
+.card-action-btn.primary {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: var(--primary);
+}
+
+.card-action-btn.primary:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+  box-shadow: 0 6px 14px rgba(45, 106, 79, 0.22);
+}
+
+.food-card.donor-card .card-action-btn.primary {
+  background: var(--donor);
+  border-color: var(--donor);
+}
+
+.food-card.donor-card .card-action-btn.primary:hover {
+  background: var(--donor-dark);
+  border-color: var(--donor-dark);
+  box-shadow: 0 6px 14px rgba(224, 122, 95, 0.30);
+}
+
+.card-action-btn.disabled,
+.card-action-btn:disabled {
+  background: var(--surface-sunk);
+  color: var(--text-muted);
+  border-color: var(--border);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.card-action-btn.disabled:hover,
+.card-action-btn:disabled:hover {
+  background: var(--surface-sunk);
+  color: var(--text-muted);
+  border-color: var(--border);
+  transform: none;
+}
+
+/* ── Expired tone ────────────────────────────────────── */
+.food-card.food-card--expired .food-card-title,
+.food-card.org-card--expired  .food-card-title {
+  color: var(--text-secondary);
+}
+
+.food-card.food-card--expired .food-card-image,
+.food-card.org-card--expired  .food-card-image {
+  filter: grayscale(0.4);
+  opacity: 0.85;
+}

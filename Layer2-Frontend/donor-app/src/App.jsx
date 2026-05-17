@@ -10,7 +10,7 @@ import PostFeedPage from './pages/PostFeedPage'
 import DonationFormPage from './pages/DonationFormPage'
 import DonorDashboardPage from './pages/DonorDashboardPage'
 import DonorHotspotsPage from './pages/DonorHotspotsPage'
-import HotspotMap from './pages/HotspotMap'
+// HotspotMap retired — /donor/hotspots now redirects to Area Intelligence
 
 // Pages - Organization Flow
 import OrgCodeInputPage from './pages/OrgCodeInputPage'
@@ -18,6 +18,7 @@ import RegisterPage from './pages/RegisterPage'
 import LiveListingBoard from './pages/LiveListingBoard'
 import OrgAlertsPage from './pages/OrgAlertsPage'
 import OrgSupplyGapPage from './pages/OrgSupplyGapPage'
+import OrgIntelligencePage from './pages/OrgIntelligencePage'
 import CoverageGapMap from './pages/CoverageGapMap'
 
 class MapErrorBoundary extends Component {
@@ -136,7 +137,7 @@ function AppRoutes() {
       <Route path="/donor" element={<DonorDashboardPage />} />
       <Route path="/donor/post" element={<DonationFormPage />} />
       <Route path="/donor/listings" element={<PostFeedPage />} />
-      <Route path="/donor/hotspots" element={<HotspotMap />} />
+      <Route path="/donor/hotspots" element={<Navigate to="/org/intelligence" replace />} />
       <Route path="/feed/:postcode" element={<PostFeedPage />} />
       <Route path="/hotspots/:postcode" element={<DonorHotspotsPage />} />
 
@@ -148,8 +149,9 @@ function AppRoutes() {
       <Route path="/register/:role" element={<RegisterPage />} />
       <Route path="/org/code" element={<OrgCodeInputPage />} />
       <Route path="/org/listings" element={<LiveListingBoard />} />
-      <Route path="/org/alerts" element={<OrgAlertsPage />} />
-      <Route path="/org/gaps" element={<OrgSupplyGapPage />} />
+      <Route path="/org/intelligence" element={<OrgIntelligencePage />} />
+      <Route path="/org/alerts" element={<Navigate to="/org/intelligence" replace />} />
+      <Route path="/org/gaps" element={<Navigate to="/org/intelligence" replace />} />
       <Route path="/org/coverage-map" element={<MapErrorBoundary><CoverageGapMap /></MapErrorBoundary>} />
 
       {/* Catch all - redirect to home */}

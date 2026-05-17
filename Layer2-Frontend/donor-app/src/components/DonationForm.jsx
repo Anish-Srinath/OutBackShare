@@ -18,10 +18,9 @@ import {
   resolveListingCategory,
   SIZE_CUE_OPTIONS,
 } from '../constants/listings'
-import DonorFeatureNav from './DonorFeatureNav'
-import OrgFeatureNav from './OrgFeatureNav'
-import WorkspaceHeader from './WorkspaceHeader'
 import { forgetDonorListing, getOrCreateDonorCode, rememberDonorListing } from '../utils/donorIdentity'
+import logoUrl from '../assets/outbackshare-logo.png'
+import textureImg from '../assets/post-food-texture.jpg'
 import { resolveImageUrl } from '../utils/imageUrl'
 import { getSavedDonorPostcode, saveDonorPostcode } from '../utils/donorPostcode'
 import { rememberListingSafety } from '../utils/listingSafety'
@@ -578,23 +577,12 @@ const DonationForm = () => {
                   type="button"
                   className="success-action-btn"
                   onClick={() =>
-                    navigate('/org/alerts', {
+                    navigate('/org/intelligence', {
                       state: { orgCode: initialOrgCode || successListing.orgCode || '' },
                     })
                   }
                 >
-                  {t('donation.actions.viewOrgAlerts', 'Review alerts')}
-                </button>
-                <button
-                  type="button"
-                  className="success-action-btn"
-                  onClick={() =>
-                    navigate('/org/gaps', {
-                      state: { orgCode: initialOrgCode || successListing.orgCode || '' },
-                    })
-                  }
-                >
-                  {t('donation.actions.viewOrgGaps', 'Review supply gaps')}
+                  {t('donation.actions.viewAreaIntelligence', 'Area Intelligence')}
                 </button>
               </>
             ) : (
@@ -610,7 +598,7 @@ const DonationForm = () => {
               <button
                 type="button"
                 className="success-action-btn"
-                onClick={() => navigate('/donor/hotspots', { state: { postcode: successListing.postcode } })}
+                onClick={() => navigate('/org/intelligence', { state: { fromDonor: true, returnPath: '/donor/listings' } })}
               >
                 {t('donation.actions.viewHotspots', 'See where food is needed')}
               </button>
@@ -646,96 +634,157 @@ const DonationForm = () => {
     )
   }
 
+  // nav tabs for the new header
+  const FORM_TABS = orgMode ? [
+    { label: 'Listings',      path: '/org/listings', state: { orgCode: currentOrgCode }, active: false },
+    { label: 'Post Food',     path: null,            state: null,                        active: true  },
+    { label: 'Area Intelligence', path: '/org/intelligence', state: { orgCode: currentOrgCode }, active: false },
+  ] : [
+    { label: 'My Listings', path: '/donor/listings', state: { postcode: currentDonorPostcode }, active: false },
+    { label: 'Post Food',   path: null,              state: null,                               active: true  },
+    { label: 'Area Intelligence', path: '/org/intelligence', state: { fromDonor: true, returnPath: '/donor/listings' }, active: false },
+  ]
+
   return (
-    <div className={`donation-form-container ${roleThemeClass}`.trim()}>
-      <WorkspaceHeader
-        role={orgMode ? 'org' : 'donor'}
-        onBackClick={handleBack}
-        onBrandClick={goToWorkspaceHome}
-        utilityContent={(
-          <div className="workspace-header__utility-badge">
-            <span className="material-symbols-outlined">auto_awesome</span>
-            {orgMode ? t('donation.orgTitle') : t('donation.aiTitle')}
-          </div>
-        )}
-      />
+    <div style={{ minHeight: '100vh', background: '#1b4332', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflowX: 'hidden' }}>
+      {/* Organic bloom effects */}
+      <div style={{ position: 'fixed', width: 700, height: 700, background: 'radial-gradient(circle, rgba(45,106,79,0.25) 0%, transparent 70%)', filter: 'blur(80px)', top: -250, left: -250, zIndex: 0, pointerEvents: 'none' }} />
+      <div style={{ position: 'fixed', width: 700, height: 700, background: 'radial-gradient(circle, rgba(45,106,79,0.25) 0%, transparent 70%)', filter: 'blur(80px)', bottom: -250, right: -250, zIndex: 0, pointerEvents: 'none' }} />
+      {/* Texture overlay */}
+      <div style={{ position: 'fixed', inset: 0, backgroundImage: `url(${textureImg})`, backgroundSize: 'cover', opacity: 0.05, zIndex: 0, pointerEvents: 'none' }} />
 
-      <div className="workspace-nav-row workspace-form-nav-row">
-        {orgMode ? (
-          <OrgFeatureNav active="" orgCode={currentOrgCode} />
-        ) : (
-          <DonorFeatureNav active="" postcode={currentDonorPostcode} />
-        )}
-      </div>
+      {/* ── Header ── */}
+      <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(27,67,50,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 48px', height: 68 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <button type="button" onClick={handleBack}
+            style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.10)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#95d4b3', transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.18)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.10)'}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>arrow_back</span>
+          </button>
+          <button type="button" onClick={goToWorkspaceHome} style={{ border: 'none', background: 'transparent', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+            <img src={logoUrl} alt="OutBackShare" style={{ height: 30, width: 'auto', objectFit: 'contain', alignSelf: 'flex-start', filter: 'brightness(0) invert(1)' }} />
+          </button>
+        </div>
+        <nav style={{ display: 'flex', gap: 4 }}>
+          {FORM_TABS.map(tab => (
+            <button key={tab.label} type="button"
+              onClick={tab.path ? () => navigate(tab.path, { state: tab.state }) : undefined}
+              style={{ padding: '7px 16px', borderRadius: 8, border: 'none', background: tab.active ? 'rgba(149,212,179,0.20)' : 'transparent', color: tab.active ? '#95d4b3' : 'rgba(149,212,179,0.55)', fontWeight: tab.active ? 700 : 500, fontSize: 14, cursor: tab.path ? 'pointer' : 'default', fontFamily: 'inherit', transition: 'background 0.15s' }}
+              onMouseEnter={e => { if (tab.path) e.currentTarget.style.background = 'rgba(149,212,179,0.12)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = tab.active ? 'rgba(149,212,179,0.20)' : 'transparent' }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(149,212,179,0.22)', borderRadius: 999, padding: '5px 14px' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#95d4b3' }}>auto_awesome</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#95d4b3' }}>{orgMode ? t('donation.orgTitle') : t('donation.aiTitle')}</span>
+        </div>
+      </header>
 
-      <form onSubmit={handleSubmit} className="donation-form-shell">
-        <main className="form-content">
-          <header className="form-hero">
-            <h1>{pageTitle}</h1>
-            <p>
-              {orgMode
-                ? orgName
-                  ? t('dashboard.sharing', { orgName })
-                  : t('donation.subtitle')
-                : t('donation.subtitle')}
-            </p>
-          </header>
+      {/* ── 2-column layout ── */}
+      <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'flex-start', gap: 32, maxWidth: 1380, margin: '0 auto', padding: '40px 48px 80px', position: 'relative', zIndex: 1 }}>
 
+        {/* ── LEFT: Photo + AI panel (sticky) ── */}
+        <div style={{ width: 360, flexShrink: 0, position: 'sticky', top: 88, display: 'flex', flexDirection: 'column', gap: 18 }}>
+
+          {/* Photo upload or preview */}
           {previewImageUrl && !previewLoadFailed ? (
-            <div className="photo-preview">
-              <img src={previewImageUrl} alt="Food" onError={() => setPreviewLoadFailed(true)} />
-              <button
-                type="button"
-                className="btn-change-photo"
-                onClick={() => {
-                  selectedFileRef.current = null
-                  setPreviewLoadFailed(false)
-                  handleChange('photoUrl', null)
-                  if (fileInputRef.current) fileInputRef.current.value = ''
-                }}
+            <div style={{ position: 'relative', borderRadius: 20, overflow: 'hidden', border: '2px solid rgba(149,212,179,0.3)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+              <img src={previewImageUrl} alt="Food" onError={() => setPreviewLoadFailed(true)} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block' }} />
+              <button type="button"
+                onClick={() => { selectedFileRef.current = null; setPreviewLoadFailed(false); handleChange('photoUrl', null); if (fileInputRef.current) fileInputRef.current.value = '' }}
+                style={{ position: 'absolute', bottom: 14, right: 14, background: 'rgba(27,67,50,0.85)', backdropFilter: 'blur(8px)', border: '1px solid rgba(149,212,179,0.3)', borderRadius: 999, padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#95d4b3', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit' }}
               >
-                <span className="material-symbols-outlined">photo_camera</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>photo_camera</span>
                 {t('donation.changePhoto')}
               </button>
             </div>
           ) : (
-            <label className="upload-area">
-              <div className="upload-icon-circle">
-                <span className="material-symbols-outlined">photo_camera</span>
+            <label
+              style={{ border: '2px dashed rgba(149,212,179,0.38)', borderRadius: 20, padding: '44px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', cursor: 'pointer', background: 'rgba(45,106,79,0.15)', transition: 'background 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(45,106,79,0.28)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(45,106,79,0.15)'}
+            >
+              <div style={{ width: 60, height: 60, background: 'rgba(149,212,179,0.18)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 30, color: '#95d4b3' }}>photo_camera</span>
               </div>
-              <div className="upload-title">{t('donation.takePhoto')}</div>
-              <div className="upload-subtitle">{t('donation.uploadSubtitle')}</div>
-              <input
-                ref={fileInputRef}
-                className="upload-input"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-              />
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#95d4b3', marginBottom: 8 }}>{t('donation.takePhoto')}</div>
+              <div style={{ fontSize: 13, color: 'rgba(149,212,179,0.65)', lineHeight: 1.6 }}>{t('donation.uploadSubtitle')}</div>
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
             </label>
           )}
 
-          {aiProcessing ? <div className="ai-processing">{t('donation.analyzing')}</div> : null}
-          {error ? <div className="error-message">{error}</div> : null}
-
-          <section className="ai-result-card">
-            <div className="ai-result-label">
-              <div className="ai-label-icon">
-                <span className="material-symbols-outlined">auto_awesome</span>
-              </div>
-              <span className="ai-label-text">{t('donation.aiDetails')}</span>
+          {/* AI processing */}
+          {aiProcessing && (
+            <div style={{ background: 'rgba(45,106,79,0.3)', border: '1px solid rgba(149,212,179,0.25)', borderRadius: 14, padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 10, color: '#95d4b3', fontSize: 14, fontWeight: 500 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>auto_awesome</span>
+              {t('donation.analyzing')}
             </div>
+          )}
 
-            <div className="ai-review-note">
-              <p>{t('donation.reviewTitle', 'Suggested details — please review before posting.')}</p>
-              <ul>
-                <li>{t('donation.reviewHintFood', 'Check the food name and category.')}</li>
-                <li>{t('donation.reviewHintQuantity', 'Confirm the quantity and portion size.')}</li>
-                <li>{t('donation.reviewHintDietary', 'Update the dietary tag if the AI guessed incorrectly.')}</li>
+          {/* AI suggestion notice */}
+          <div style={{ background: 'rgba(45,106,79,0.22)', border: '1px solid rgba(149,212,179,0.20)', borderRadius: 20, padding: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+              <div style={{ width: 34, height: 34, background: 'rgba(149,212,179,0.18)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#95d4b3' }}>auto_awesome</span>
+              </div>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#95d4b3' }}>{t('donation.aiDetails')}</span>
+            </div>
+            <div style={{ background: 'rgba(177,240,206,0.10)', border: '1px solid rgba(149,212,179,0.18)', borderRadius: 12, padding: '14px 16px' }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#b1f0ce', margin: '0 0 8px', lineHeight: 1.5 }}>{t('donation.reviewTitle', 'Suggested details — please review before posting.')}</p>
+              <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 5 }}>
+                <li style={{ fontSize: 12, color: 'rgba(177,240,206,0.80)', lineHeight: 1.6 }}>{t('donation.reviewHintFood', 'Check the food name and category.')}</li>
+                <li style={{ fontSize: 12, color: 'rgba(177,240,206,0.80)', lineHeight: 1.6 }}>{t('donation.reviewHintQuantity', 'Confirm the quantity and portion size.')}</li>
+                <li style={{ fontSize: 12, color: 'rgba(177,240,206,0.80)', lineHeight: 1.6 }}>{t('donation.reviewHintDietary', 'Update the dietary tag if the AI guessed incorrectly.')}</li>
               </ul>
             </div>
+          </div>
 
-            <div className="ai-fields-grid">
+          {/* Impact stats */}
+          <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(149,212,179,0.14)', borderRadius: 20, padding: '20px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(149,212,179,0.55)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>Your average impact per post</div>
+            {[
+              { icon: 'eco',      label: 'CO₂ avoided',        value: '0.9 kg' },
+              { icon: 'group',    label: 'Families reached',   value: '2–4' },
+              { icon: 'schedule', label: 'Avg. claim time',    value: '< 20 min' },
+            ].map(({ icon, label, value }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 0', borderBottom: '1px solid rgba(149,212,179,0.08)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#95d4b3' }}>{icon}</span>
+                  <span style={{ fontSize: 13, color: 'rgba(149,212,179,0.72)' }}>{label}</span>
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#b1f0ce' }}>{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── RIGHT: White form card ── */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ background: 'rgba(249,249,246,0.98)', borderRadius: 24, boxShadow: '0 24px 80px rgba(0,0,0,0.35)', border: '1px solid rgba(149,212,179,0.22)', overflow: 'hidden' }}>
+
+            {/* Card heading */}
+            <div style={{ padding: '36px 44px 28px', borderBottom: '1px solid #e8e8e5', background: 'linear-gradient(135deg, rgba(177,240,206,0.08) 0%, transparent 60%)' }}>
+              <h1 style={{ fontSize: 'clamp(24px, 2.6vw, 36px)', fontWeight: 700, color: '#0f5238', margin: '0 0 10px', letterSpacing: '-0.02em' }}>{pageTitle}</h1>
+              <p style={{ fontSize: 15, color: '#707973', margin: 0, lineHeight: 1.65 }}>
+                {orgMode ? (orgName ? t('dashboard.sharing', { orgName }) : t('donation.subtitle')) : t('donation.subtitle')}
+              </p>
+            </div>
+
+            {/* Error banner */}
+            {error && (
+              <div style={{ margin: '24px 44px 0', padding: '13px 18px', borderRadius: 12, background: '#ffdad6', color: '#93000a', fontSize: 14, lineHeight: 1.5 }}>
+                {error}
+              </div>
+            )}
+
+            {/* Form fields */}
+            <div style={{ padding: '32px 44px' }}>
+              <div className="ai-fields-grid">
               <div className="ai-field full">
                 <label className="field-label" htmlFor="foodType">{t('donation.foodName')}</label>
                 <input
@@ -1050,38 +1099,36 @@ const DonationForm = () => {
                 />
               </div>
             </div>
-          </section>
-        </main>
+            </div>
 
-        <footer className="form-footer">
-          <div className="form-footer-inner">
-            <label style={{
-              display: 'flex', alignItems: 'flex-start', gap: '10px',
-              marginBottom: '0.9rem', cursor: 'pointer',
-            }}>
-              <input
-                type="checkbox"
-                checked={disclaimerChecked}
-                onChange={(e) => setDisclaimerChecked(e.target.checked)}
-                style={{ marginTop: '2px', width: 16, height: 16, flexShrink: 0, cursor: 'pointer' }}
-              />
-              <span style={{ fontSize: '0.78rem', color: '#4a5568', lineHeight: 1.55 }}>
-                {t('donation.disclaimerCheckbox',
-                  'I confirm that the food details, expiry date, allergen information, and storage condition are accurate to the best of my knowledge. I understand that OutBackShare acts as a coordination platform and does not independently verify food safety or suitability.'
-                )}
-              </span>
-            </label>
-            <button type="submit" className="btn-submit" disabled={loading || aiProcessing || !disclaimerChecked}>
-              {loading
-                ? t('common.loading')
-                : editMode
-                  ? t('donation.saveButton', 'Save listing changes')
-                  : t('donation.postButton')}
-              {loading ? null : <span className="material-symbols-outlined">arrow_forward</span>}
-            </button>
-            <p className="form-security-note">{t('common.secure')}</p>
+            {/* Card footer — disclaimer + submit */}
+            <div style={{ padding: '28px 44px 40px', borderTop: '1px solid #e8e8e5', background: 'linear-gradient(to top, rgba(177,240,206,0.05) 0%, transparent 80%)' }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 20, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={disclaimerChecked}
+                  onChange={(e) => setDisclaimerChecked(e.target.checked)}
+                  style={{ marginTop: 3, width: 16, height: 16, flexShrink: 0, cursor: 'pointer', accentColor: '#0f5238' }}
+                />
+                <span style={{ fontSize: 13, color: '#707973', lineHeight: 1.6 }}>
+                  {t('donation.disclaimerCheckbox',
+                    'I confirm that the food details, expiry date, allergen information, and storage condition are accurate to the best of my knowledge. I understand that OutBackShare acts as a coordination platform and does not independently verify food safety or suitability.'
+                  )}
+                </span>
+              </label>
+              <button type="submit"
+                disabled={loading || aiProcessing || !disclaimerChecked}
+                style={{ width: '100%', height: 60, background: disclaimerChecked && !loading && !aiProcessing ? '#9a442d' : '#bfc9c1', color: '#fff', border: 'none', borderRadius: 16, fontWeight: 700, fontSize: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, cursor: disclaimerChecked && !loading && !aiProcessing ? 'pointer' : 'not-allowed', transition: 'background 0.2s, transform 0.15s', fontFamily: 'inherit', boxShadow: disclaimerChecked && !loading && !aiProcessing ? '0 6px 24px rgba(154,68,45,0.32)' : 'none' }}
+                onMouseEnter={e => { if (disclaimerChecked && !loading && !aiProcessing) e.currentTarget.style.opacity = '0.92' }}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 22 }}>volunteer_activism</span>
+                {loading ? t('common.loading') : editMode ? t('donation.saveButton', 'Save listing changes') : t('donation.postButton')}
+              </button>
+              <p style={{ textAlign: 'center', fontSize: 12, color: '#bfc9c1', marginTop: 12 }}>{t('common.secure')}</p>
+            </div>
           </div>
-        </footer>
+        </div>
       </form>
     </div>
   )

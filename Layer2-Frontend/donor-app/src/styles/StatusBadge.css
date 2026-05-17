@@ -1,0 +1,70 @@
+/* =============================================================
+   StatusBadge — listing-state pill
+   Always: colour + icon + label. Never colour alone.
+   ============================================================= */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  transition: transform var(--dur-fast) var(--ease);
+}
+
+.status-badge__icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* ── Variants ────────────────────────────────────────── */
+.status-badge--compact {
+  padding: 3px 8px 3px 6px;
+  font-size: 10px;
+  gap: 4px;
+}
+
+.status-badge--compact .status-badge__icon { font-size: 12px; }
+
+.status-badge--soft { box-shadow: none; }
+
+/* ── States — colour + tone per brief ───────────────── */
+.status-badge--available {
+  background: var(--status-available-bg);
+  color: var(--status-available);
+  border-color: rgba(45, 106, 79, 0.18);
+}
+
+.status-badge--claimed {
+  background: var(--status-claimed-bg);
+  color: var(--status-claimed);
+  border-color: rgba(196, 139, 30, 0.30);
+}
+
+.status-badge--collected {
+  background: var(--status-collected-bg);
+  color: var(--status-collected);
+  border-color: rgba(17, 94, 89, 0.22);
+}
+
+.status-badge--expired {
+  background: var(--status-expired-bg);
+  color: var(--status-expired);
+  border-color: rgba(75, 85, 99, 0.20);
+}
+
+.status-badge--posted {
+  background: var(--status-posted-bg);
+  color: var(--status-posted);
+  border-color: rgba(61, 64, 91, 0.22);
+}

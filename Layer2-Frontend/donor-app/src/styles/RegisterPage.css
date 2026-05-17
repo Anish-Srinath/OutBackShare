@@ -7,8 +7,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1.5rem;
+  padding: var(--space-6) 1.5rem;
   position: relative;
+  font-family: var(--font-sans);
 }
 
 /* ── Back button ───────────────────────────────────────────── */
@@ -24,13 +25,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--on-surface-variant);
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background var(--dur) var(--ease);
 }
 
 .back-link:hover {
-  background: var(--surface-low);
+  background: var(--surface-sunk);
 }
 
 /* ── Card ──────────────────────────────────────────────────── */
@@ -40,10 +41,11 @@
 }
 
 .register-card {
-  background: var(--surface-container-lowest);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   padding: 3rem 2rem;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -63,21 +65,21 @@
 }
 
 .register-icon-circle.donor {
-  background: var(--donor-fixed, #fff3e0);
+  background: var(--donor-pale);
 }
 
 .register-icon-circle.org {
-  background: var(--primary-fixed, #d2f4e8);
+  background: var(--primary-pale);
 }
 
 .register-icon-circle .material-symbols-outlined {
   font-size: 2rem;
-  color: var(--on-primary-fixed);
+  color: var(--primary);
 }
 
 /* ── Text ──────────────────────────────────────────────────── */
 .register-brand {
-  font-family: var(--font-headline);
+  font-family: var(--font-sans);
   font-weight: 900;
   font-size: 1.75rem;
   letter-spacing: -0.03em;
@@ -86,16 +88,16 @@
 }
 
 .register-title {
-  font-family: var(--font-headline);
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 1.4rem;
-  color: var(--on-surface);
+  color: var(--text-primary);
   letter-spacing: -0.02em;
   margin: 0;
 }
 
 .register-desc {
-  color: var(--on-surface-variant);
+  color: var(--text-secondary);
   font-size: 0.9rem;
   line-height: 1.55;
   margin: 0 0 0.5rem;
@@ -105,7 +107,7 @@
 .register-mode-tabs {
   display: flex;
   gap: 0.25rem;
-  background: var(--surface-container-high);
+  background: var(--surface-muted);
   padding: 0.25rem;
   border-radius: var(--radius);
   width: 100%;
@@ -115,20 +117,20 @@
   flex: 1;
   padding: 0.55rem 0.5rem;
   border: none;
-  border-radius: calc(var(--radius) - 0.2rem);
+  border-radius: calc(var(--radius) - 2px);
   cursor: pointer;
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   font-size: 0.875rem;
   font-weight: 500;
   background: transparent;
-  color: var(--on-surface-variant);
-  transition: background 0.15s, color 0.15s;
+  color: var(--text-secondary);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 
 .mode-tab.active {
-  background: var(--surface-container-lowest);
-  color: var(--on-surface);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-xs);
 }
 
 /* ── Generated code display ────────────────────────────────── */
@@ -142,21 +144,21 @@
 }
 
 .code-display-box.donor {
-  background: #fff8f0;
-  border: 2px dashed var(--donor-accent, #e88b2e);
+  background: var(--donor-pale);
+  border: 2px dashed var(--donor);
 }
 
 .code-display-box.org {
-  background: var(--primary-fixed, #d2f4e8);
+  background: var(--primary-pale);
   border: 2px dashed var(--primary);
 }
 
 .code-display-text {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: var(--font-mono);
   font-size: 1.6rem;
   font-weight: 700;
   letter-spacing: 0.15em;
-  color: var(--on-surface);
+  color: var(--text-primary);
 }
 
 /* ── Code action buttons ───────────────────────────────────── */
@@ -175,11 +177,11 @@
   gap: 0.4rem;
   padding: 0.7rem 1rem;
   border-radius: var(--radius-full);
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: filter 0.15s, transform 0.15s;
+  transition: filter var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
   border: none;
 }
 
@@ -189,8 +191,9 @@
 }
 
 .btn-regenerate {
-  background: var(--surface-container-high);
-  color: var(--on-surface-variant);
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
 }
 
 .btn-copy:hover,
@@ -206,22 +209,22 @@
 /* ── Existing code input ───────────────────────────────────── */
 .org-code-input {
   width: 100%;
-  background: var(--surface-container-high);
-  border: none;
+  background: var(--surface-sunk);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.1rem 1.25rem;
-  font-family: var(--font-headline);
+  font-family: var(--font-sans);
   font-size: 1.2rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-align: center;
-  color: var(--on-surface);
-  transition: box-shadow 0.2s;
+  color: var(--text-primary);
+  transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
   box-sizing: border-box;
 }
 
 .org-code-input::placeholder {
-  color: var(--outline);
+  color: var(--text-muted);
   font-weight: 400;
   letter-spacing: 0.05em;
   font-size: 0.9rem;
@@ -229,16 +232,17 @@
 
 .org-code-input:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 105, 76, 0.3);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-focus);
 }
 
 /* ── Error ─────────────────────────────────────────────────── */
 .error-message {
   width: 100%;
   padding: 0.75rem;
-  background: rgba(179, 38, 30, 0.1);
-  border-radius: var(--radius);
-  color: #b3261e;
+  background: var(--critical-bg);
+  border-radius: var(--radius-sm);
+  color: var(--critical-text);
   font-size: 0.875rem;
   text-align: center;
 }
@@ -250,17 +254,18 @@
   background: var(--primary);
   color: var(--on-primary);
   border-radius: var(--radius-full);
-  font-family: var(--font-headline);
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 1rem;
   border: none;
   cursor: pointer;
-  transition: filter 0.15s, transform 0.15s;
-  box-shadow: var(--shadow-float);
+  transition: filter var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+  box-shadow: var(--shadow-md);
 }
 
 .submit-btn:hover:not(:disabled) {
   filter: brightness(0.9);
+  box-shadow: var(--shadow-lg);
 }
 
 .submit-btn:active:not(:disabled) {
@@ -275,7 +280,7 @@
 /* ── Privacy note ──────────────────────────────────────────── */
 .privacy-note {
   font-size: 0.75rem;
-  color: var(--outline);
+  color: var(--text-muted);
   line-height: 1.5;
   margin: 0;
 }
@@ -285,7 +290,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
   text-align: left;
 }
 
@@ -296,38 +301,39 @@
 }
 
 .field-label {
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--on-surface-variant);
+  color: var(--text-secondary);
 }
 
 .field-label .required {
-  color: #b3261e;
+  color: var(--critical);
   margin-left: 0.15rem;
 }
 
 .field-input {
   width: 100%;
-  background: var(--surface-container-high);
-  border: none;
-  border-radius: var(--radius);
+  background: var(--surface-sunk);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   padding: 0.85rem 1rem;
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   font-size: 0.95rem;
-  color: var(--on-surface);
-  transition: box-shadow 0.2s;
+  color: var(--text-primary);
+  transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
   box-sizing: border-box;
 }
 
 .field-input::placeholder {
-  color: var(--outline);
+  color: var(--text-muted);
   font-size: 0.875rem;
 }
 
 .field-input:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 105, 76, 0.3);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-focus);
 }
 
 /* ── Select ────────────────────────────────────────────────── */
@@ -338,22 +344,23 @@
 
 .field-select {
   width: 100%;
-  background: var(--surface-container-high);
-  border: none;
-  border-radius: var(--radius);
+  background: var(--surface-sunk);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   padding: 0.85rem 2.5rem 0.85rem 1rem;
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   font-size: 0.95rem;
-  color: var(--on-surface);
+  color: var(--text-primary);
   appearance: none;
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
   box-sizing: border-box;
 }
 
 .field-select:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 105, 76, 0.3);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-focus);
 }
 
 .select-arrow {
@@ -362,14 +369,14 @@
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
-  color: var(--on-surface-variant);
+  color: var(--text-secondary);
   font-size: 1.2rem;
 }
 
 /* ── Field hint ────────────────────────────────────────────── */
 .field-hint {
   font-size: 0.775rem;
-  color: var(--outline);
+  color: var(--text-muted);
   line-height: 1.45;
 }
 
@@ -379,7 +386,7 @@
   align-items: center;
   gap: 0.75rem;
   width: 100%;
-  color: var(--outline);
+  color: var(--text-muted);
   font-size: 0.8rem;
 }
 
@@ -388,7 +395,7 @@
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--surface-container-high);
+  background: var(--border);
 }
 
 /* ── "New user? Register here" outlined button ─────────────── */
@@ -403,15 +410,15 @@
   border-radius: var(--radius-full);
   background: transparent;
   color: var(--primary);
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
+  transition: background var(--dur-fast) var(--ease);
 }
 
 .register-new-user-btn:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(45, 106, 79, 0.05);
 }
 
 /* ── Empty code box state ──────────────────────────────────── */
@@ -423,7 +430,7 @@
 
 .code-display-placeholder {
   font-size: 0.9rem;
-  color: var(--on-surface-variant);
+  color: var(--text-secondary);
   font-style: italic;
 }
 

@@ -3,11 +3,11 @@
 .home-page {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top center, rgba(0, 105, 76, 0.06), transparent 28%),
-    radial-gradient(circle at left 20% top 18%, rgba(136, 82, 0, 0.06), transparent 20%),
-    linear-gradient(180deg, #fdfaf2 0%, var(--bg) 32%);
-  font-family: var(--font-body);
-  color: var(--on-surface);
+    radial-gradient(circle at top center, rgba(45, 106, 79, 0.05), transparent 28%),
+    radial-gradient(circle at left 20% top 18%, rgba(224, 122, 95, 0.04), transparent 20%),
+    var(--bg);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
   padding: 1.35rem 1.5rem 2.5rem;
 }
 
@@ -16,20 +16,20 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--space-6);
 }
 
 .home-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.85rem;
+  gap: var(--space-3);
   padding-top: 0.15rem;
 }
 
 .brand-name {
   margin: 0;
-  font-family: var(--font-headline);
+  font-family: var(--font-sans);
   font-weight: 900;
   font-size: clamp(2.6rem, 5vw, 4.2rem);
   line-height: 0.92;
@@ -50,7 +50,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.95rem;
+  gap: var(--space-3);
   text-align: center;
 }
 
@@ -58,31 +58,30 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.8rem;
+  gap: var(--space-2);
 }
 
 .home-eyebrow {
   margin: 0;
   padding: 0.42rem 0.78rem;
-  border-radius: 999px;
-  background: rgba(0, 105, 76, 0.05);
+  border-radius: var(--radius-full);
+  background: rgba(45, 106, 79, 0.07);
   color: var(--primary);
   font-size: 0.74rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  opacity: 0.82;
 }
 
 .home-question {
   margin: 0;
   max-width: 19ch;
-  font-family: var(--font-headline);
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: clamp(2.15rem, 4vw, 3.55rem);
   line-height: 1.02;
   letter-spacing: -0.055em;
-  color: var(--on-surface);
+  color: var(--text-primary);
 }
 
 .home-support {
@@ -90,13 +89,13 @@
   max-width: 600px;
   font-size: 1.03rem;
   line-height: 1.68;
-  color: var(--on-surface-variant);
+  color: var(--text-secondary);
 }
 
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.35rem;
+  gap: var(--space-4);
   width: 100%;
   align-items: stretch;
 }
@@ -105,45 +104,45 @@
   position: relative;
   min-height: 400px;
   padding: 1.75rem;
-  border-radius: 2rem;
-  border: 1px solid rgba(15, 65, 50, 0.06);
-  background: rgba(246, 244, 235, 0.82);
-  box-shadow: 0 18px 42px rgba(28, 28, 23, 0.04);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
   cursor: pointer;
   overflow: hidden;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
 
 .role-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 22px 48px rgba(28, 28, 23, 0.08);
+  box-shadow: var(--shadow-lg);
 }
 
 .role-card-accent {
   position: absolute;
   inset: 12px auto 12px 8px;
-  width: 6px;
-  border-radius: 999px;
+  width: 5px;
+  border-radius: var(--radius-full);
   opacity: 1;
   pointer-events: none;
 }
 
 .role-card-accent.donor {
-  background: linear-gradient(180deg, rgba(136, 82, 0, 0.95) 0%, rgba(207, 151, 62, 0.85) 100%);
+  background: linear-gradient(180deg, var(--donor) 0%, var(--donor-pale) 100%);
 }
 
 .role-card-accent.org {
-  background: linear-gradient(180deg, rgba(0, 105, 76, 0.96) 0%, rgba(72, 179, 136, 0.8) 100%);
+  background: linear-gradient(180deg, var(--primary) 0%, var(--primary-light) 100%);
 }
 
 .role-card--donor {
-  background: linear-gradient(180deg, rgba(255, 251, 243, 0.98) 0%, rgba(247, 241, 229, 0.98) 100%);
-  border-color: rgba(136, 82, 0, 0.12);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--donor-pale) 100%);
+  border-color: rgba(224, 122, 95, 0.15);
 }
 
 .role-card--org {
-  background: linear-gradient(180deg, rgba(248, 253, 250, 0.98) 0%, rgba(238, 247, 242, 0.98) 100%);
-  border-color: rgba(0, 105, 76, 0.12);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--primary-pale) 100%);
+  border-color: rgba(45, 106, 79, 0.12);
 }
 
 .role-card-inner {
@@ -161,7 +160,7 @@
   align-items: center;
   justify-content: flex-start;
   text-align: center;
-  gap: 1rem;
+  gap: var(--space-4);
   padding-top: 0.4rem;
 }
 
@@ -175,12 +174,12 @@
 }
 
 .role-icon-circle.donor {
-  background: #ffdcbc;
-  color: var(--secondary);
+  background: var(--donor-pale);
+  color: var(--donor);
 }
 
 .role-icon-circle.org {
-  background: #9ff5c7;
+  background: var(--primary-pale);
   color: var(--primary);
 }
 
@@ -191,7 +190,7 @@
 .role-card-title {
   margin: 0;
   max-width: 13ch;
-  font-family: var(--font-headline);
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: clamp(1.65rem, 3vw, 2.2rem);
   line-height: 1.08;
@@ -200,7 +199,7 @@
 }
 
 .role-card-title.donor {
-  color: var(--secondary);
+  color: var(--donor-dark);
 }
 
 .role-card-title.org {
@@ -211,30 +210,31 @@
 .role-card-desc {
   margin: 0;
   max-width: 28ch;
-  color: var(--on-surface-variant);
+  color: var(--text-secondary);
   font-size: 1rem;
   line-height: 1.65;
 }
 
 .role-btn {
   width: min(250px, 100%);
-  min-height: 60px;
-  padding: 1rem 1.5rem;
+  min-height: 56px;
+  padding: 0.9rem 1.5rem;
   justify-self: center;
   border-radius: var(--radius-full);
-  font-family: var(--font-headline);
-  font-weight: 800;
+  font-family: var(--font-sans);
+  font-weight: 700;
   font-size: 1rem;
   letter-spacing: -0.01em;
   border: none;
   cursor: pointer;
-  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 10px 22px rgba(28, 28, 23, 0.08);
+  transition: transform var(--dur-fast) var(--ease), filter var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
+  box-shadow: var(--shadow-sm);
   white-space: nowrap;
 }
 
 .role-btn:hover {
   filter: brightness(0.95);
+  box-shadow: var(--shadow-md);
 }
 
 .role-btn:active {
@@ -242,8 +242,8 @@
 }
 
 .role-btn.donor {
-  background: var(--secondary);
-  color: var(--on-secondary);
+  background: var(--donor);
+  color: var(--on-donor);
 }
 
 .role-btn.org {
@@ -258,29 +258,29 @@
   gap: 0.75rem;
 }
 
-/* Secondary "Sign in" button — styled as an outlined button, equal prominence */
+/* Secondary "Sign in" button */
 .role-signin-link {
   width: min(250px, 100%);
-  min-height: 52px;
+  min-height: 48px;
   background: transparent;
   border: 1.5px solid currentColor;
   border-radius: var(--radius-full);
-  font-family: var(--font-headline);
-  font-weight: 700;
+  font-family: var(--font-sans);
+  font-weight: 600;
   font-size: 0.9rem;
   letter-spacing: -0.01em;
   cursor: pointer;
   padding: 0.7rem 1.25rem;
   text-align: center;
-  transition: background 0.15s ease, opacity 0.15s ease;
+  transition: background var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
 }
 
 .role-signin-link.donor {
-  color: var(--secondary, #885200);
+  color: var(--donor-dark);
 }
 
 .role-signin-link.org {
-  color: var(--primary, #00694c);
+  color: var(--primary);
 }
 
 .role-signin-link:hover {
@@ -292,9 +292,9 @@
   margin-top: 0.5rem;
   width: 4.25rem;
   height: 4px;
-  background: var(--surface-container-highest);
+  background: var(--border);
   border-radius: var(--radius-full);
-  opacity: 0.45;
+  opacity: 0.5;
 }
 
 @media (max-width: 900px) {
@@ -303,7 +303,7 @@
   }
 
   .cards-grid {
-    gap: 1.2rem;
+    gap: var(--space-3);
   }
 
   .role-card {
@@ -314,15 +314,15 @@
 
 @media (max-width: 720px) {
   .home-shell {
-    gap: 2rem;
+    gap: var(--space-6);
   }
 
   .home-header {
-    gap: 0.85rem;
+    gap: var(--space-3);
   }
 
   .home-main {
-    gap: 2rem;
+    gap: var(--space-6);
   }
 
   .cards-grid {
