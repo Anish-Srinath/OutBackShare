@@ -1,3 +1,5 @@
+/* ── LanguageSwitcher — light & dark variants ─────────────── */
+
 .language-switcher {
   display: inline-grid;
   grid-auto-flow: column;
@@ -7,12 +9,13 @@
   border-radius: 999px;
   background: #eeeeeb;
   border: 1px solid #e2e3e0;
+  flex-shrink: 0;
 }
 
 .lang-btn {
   min-width: 0;
   min-height: 0;
-  padding: 0.3rem 0.7rem;
+  padding: 0.3rem 0.75rem;
   border: none;
   background-color: transparent;
   color: #6b7280;
@@ -22,6 +25,7 @@
   font-weight: 600;
   transition: all 0.15s ease;
   white-space: nowrap;
+  font-family: inherit;
 }
 
 .lang-btn:hover {
@@ -31,5 +35,27 @@
 .lang-btn.active {
   background-color: #fff;
   color: #0f5238;
-  box-shadow: 0 1px 4px rgba(61, 64, 91, 0.1);
+  box-shadow: 0 1px 4px rgba(61, 64, 91, 0.12);
+}
+
+/* ── Dark variant ─────────────────────────────────────────── */
+
+.language-switcher--dark {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.language-switcher--dark .lang-btn {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.language-switcher--dark .lang-btn:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.language-switcher--dark .lang-btn.active {
+  background: rgba(149, 212, 179, 0.18);
+  color: #95d4b3;
+  box-shadow: none;
 }

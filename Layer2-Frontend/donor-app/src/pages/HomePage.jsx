@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import logoUrl from '../assets/outbackshare-logo.png'
 import heroBg from '../assets/Gemini_Generated_Image_tfnod8tfnod8tfno.png'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 const HANDS_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAMbSo66B4rcKCRGaTmb9NoE7PGidXGrFIDvxlABrMqnZHcVI1IwywSTeVtEwUEKWcvHfpgMJj8u34yw3PEZ38F0ef7aNt7SZZdXjHR5BNxSXRuYXAFyWeP9SixfAxbyn-YqmigCW_N57bli4qIiiBFT-ccODojYI7zTrmVGNSpALIcFPuk8KCj_db7qc0WoVPhojzKhUXytxwQbl6zlkglJVnhHSU2mxOXp269CDAQcfYMKakO1Mvk1EJBzqKXgLjp_JKhebZXbuI'
 
@@ -60,7 +61,7 @@ export default function HomePage() {
 
           {/* Logo — floats at top of hero, no header bar */}
           <div
-            className="absolute top-0 left-0 right-0 z-20 flex items-center px-10 md:px-16"
+            className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-10 md:px-16"
             style={{ height: '88px' }}
           >
             <img
@@ -68,6 +69,7 @@ export default function HomePage() {
               alt="OutBackShare"
               style={{ height: '52px', width: 'auto', filter: 'brightness(0) invert(1)', opacity: 0.95 }}
             />
+            <LanguageSwitcher dark />
           </div>
 
           {/* Hero content */}

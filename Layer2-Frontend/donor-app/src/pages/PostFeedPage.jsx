@@ -12,6 +12,7 @@ import { mergeListingSafetyFallback } from '../utils/listingSafety'
 import logoUrl from '../assets/outbackshare-logo.png'
 import mapPreviewImg from '../assets/donor-map-preview.jpg'
 import textureImg from '../assets/post-food-texture.jpg'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -288,27 +289,18 @@ const PostFeedPage = () => {
         </div>
 
         {/* Bottom section */}
-        <div style={{ marginTop: 'auto', padding: '16px 20px 24px', borderTop: '1px solid rgba(149,212,179,0.15)' }}>
+        <div style={{ marginTop: 'auto', padding: '16px 20px 24px', borderTop: '1px solid rgba(149,212,179,0.15)', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <button type="button" onClick={handleCreatePost}
-            style={{ width: '100%', background: '#9a442d', color: '#fff', border: 'none', borderRadius: 14, padding: '13px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginBottom: 12, fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(154,68,45,0.30)', transition: 'opacity 0.15s' }}
+            style={{ width: '100%', background: '#9a442d', color: '#fff', border: 'none', borderRadius: 14, padding: '13px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(154,68,45,0.30)', transition: 'opacity 0.15s' }}
             onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
             onMouseLeave={e => e.currentTarget.style.opacity = '1'}
           >
             Post Food
           </button>
-          {[
-            { icon: 'language', label: 'Language', onClick: () => {} },
-            { icon: 'settings',  label: 'Settings',  onClick: () => {} },
-          ].map(({ icon, label, onClick }) => (
-            <button key={label} type="button" onClick={onClick}
-              style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 8, border: 'none', background: 'transparent', color: 'rgba(255,255,255,0.55)', fontWeight: 500, fontSize: 13, cursor: 'pointer', width: '100%', fontFamily: 'inherit', transition: 'background 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{icon}</span>
-              {label}
-            </button>
-          ))}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Language</span>
+            <LanguageSwitcher dark />
+          </div>
         </div>
       </aside>
 

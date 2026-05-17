@@ -5,6 +5,7 @@ import { predictionApiClient } from '../services/api'
 import suburbLookup from '../data/vic_postcode_suburbs.json'
 import logoUrl from '../assets/outbackshare-logo.png'
 import textureImg from '../assets/post-food-texture.jpg'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 // Matches backend _risk_label() thresholds
 const RISK_COLORS = {
@@ -144,8 +145,11 @@ export default function CoverageGapMap() {
             ))}
           </nav>
 
-          <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 8, padding: '4px 12px', fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
-            {orgCode}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <LanguageSwitcher dark />
+            <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 8, padding: '4px 12px', fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
+              {orgCode}
+            </div>
           </div>
         </header>
 

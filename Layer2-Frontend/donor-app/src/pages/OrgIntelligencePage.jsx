@@ -6,6 +6,7 @@ import suburbLookup from '../data/vic_postcode_suburbs.json'
 import '../styles/LiveListingBoard.css'
 import logoUrl from '../assets/outbackshare-logo.png'
 import textureImg from '../assets/post-food-texture.jpg'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 function suburbName(postcode) {
   return suburbLookup[String(postcode)] || `Postcode ${postcode}`
@@ -228,9 +229,12 @@ export default function OrgIntelligencePage() {
             </button>
           ))}
         </nav>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 999, padding: '5px 14px' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#95d4b3' }}>groups</span>
-          <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>{orgCode}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <LanguageSwitcher dark />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 999, padding: '5px 14px' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#95d4b3' }}>groups</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>{orgCode}</span>
+          </div>
         </div>
       </header>
 

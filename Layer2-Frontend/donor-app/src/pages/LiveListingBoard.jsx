@@ -7,6 +7,7 @@ import { resolveImageUrl } from '../utils/imageUrl'
 import { mergeListingSafetyFallback } from '../utils/listingSafety'
 import { getStoredOrgName } from '../utils/codeGeneration'
 import ChatModal from '../components/ChatModal'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 import logoUrl from '../assets/outbackshare-logo.png'
 import textureImg from '../assets/post-food-texture.jpg'
 
@@ -516,8 +517,14 @@ const LiveListingBoard = () => {
           </div>
         </div>
 
+        {/* Language switcher */}
+        <div style={{ padding: '12px 20px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Language</span>
+          <LanguageSwitcher dark />
+        </div>
+
         {/* Org badge at bottom */}
-        <div style={{ marginTop: 'auto', padding: '16px 20px', borderTop: '1px solid rgba(149,212,179,0.15)' }}>
+        <div style={{ padding: '12px 20px 20px', borderTop: '1px solid rgba(149,212,179,0.15)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(149,212,179,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <span className="material-symbols-outlined" style={{ fontSize: 18, color: '#95d4b3' }}>groups</span>
@@ -548,6 +555,7 @@ const LiveListingBoard = () => {
             {success && (
               <div style={{ padding: '6px 14px', borderRadius: 10, background: 'rgba(149,212,179,0.15)', color: '#95d4b3', fontSize: 13, fontWeight: 500, border: '1px solid rgba(149,212,179,0.2)' }}>{success}</div>
             )}
+            <LanguageSwitcher dark />
             <button type="button" onClick={handlePostExcess}
               style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#95d4b3', color: '#002114', border: 'none', borderRadius: 12, padding: '9px 18px', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'opacity 0.15s', fontFamily: 'inherit' }}
               onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}

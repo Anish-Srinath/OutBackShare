@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import logoUrl from '../assets/outbackshare-logo.png'
 import textureImg from '../assets/post-food-texture.jpg'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 const ORG_SESSION_KEY = 'crisislink-org-session'
 
@@ -150,8 +151,8 @@ const OrgCodeInputPage = () => {
             </p>
           </form>
 
-          <div style={{ marginTop: 28, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.08)', textAlign: 'center' }}>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: 0 }}>
+          <div style={{ marginTop: 28, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: '0 0 16px', textAlign: 'center' }}>
               {t('orgCode.noCode', "Don't have a code?")}{' '}
               <button
                 type="button"
@@ -161,6 +162,10 @@ const OrgCodeInputPage = () => {
                 {t('orgCode.registerLink', 'Register your organisation')}
               </button>
             </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Language</span>
+              <LanguageSwitcher dark />
+            </div>
           </div>
         </div>
       </div>

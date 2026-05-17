@@ -21,6 +21,7 @@ import {
 import { forgetDonorListing, getOrCreateDonorCode, rememberDonorListing } from '../utils/donorIdentity'
 import logoUrl from '../assets/outbackshare-logo.png'
 import textureImg from '../assets/post-food-texture.jpg'
+import produceBgImg from '../assets/postcode-produce.jpg'
 import { resolveImageUrl } from '../utils/imageUrl'
 import { getSavedDonorPostcode, saveDonorPostcode } from '../utils/donorPostcode'
 import { rememberListingSafety } from '../utils/listingSafety'
@@ -502,132 +503,159 @@ const DonationForm = () => {
   }
 
   if (successListing) {
+    const backAction = () => {
+      if (orgMode) {
+        navigate('/org/listings', { state: { orgCode: initialOrgCode || successListing.orgCode || '', filterStatus: 'posted' } })
+      } else {
+        navigate('/donor/listings', { state: { postcode: successListing.postcode } })
+      }
+    }
+
     return (
-      <div className={`success-container ${roleThemeClass}`.trim()}>
-        <div className="success-card success-card-wide">
-          <div className="success-icon">
-            <span className="material-symbols-outlined">check_circle</span>
-          </div>
-          <h2>{editMode ? t('donation.success.updatedTitle', 'Listing updated') : t('donation.success.title')}</h2>
-          <p>
-            {orgMode
-              ? t('donation.success.orgMessage')
-              : t('donation.success.donorMessage')}
-          </p>
-          {!orgMode ? (
-            <div className="success-next-step">
-              <strong>{t('donation.success.nextStepLabel', 'Next step')}</strong>
-              <p>{t('donation.success.nextStepHint', 'We’ll notify you when an organisation claims your listing. You can then coordinate pickup through messages.')}</p>
-            </div>
-          ) : null}
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
 
-          <div style={{
-            background: '#fffbeb',
-            border: '1px solid rgba(221,107,32,0.25)',
-            borderRadius: '0.75rem',
-            padding: '0.9rem 1rem',
-            marginBottom: '0.5rem',
-            textAlign: 'left',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.55rem' }}>
-              <span className="material-symbols-outlined" style={{ color: '#dd6b20', fontSize: '1.1rem' }}>
-                shield
-              </span>
-              <strong style={{ fontSize: '0.8rem', color: '#92400e', letterSpacing: '0.01em' }}>
-                {t('donation.safety.title')}
-              </strong>
-            </div>
-            <ul style={{ margin: 0, paddingLeft: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <li style={{ fontSize: '0.75rem', color: '#78350f', lineHeight: 1.55 }}>
-                {t('donation.safety.accuracy')}
-              </li>
-              <li style={{ fontSize: '0.75rem', color: '#78350f', lineHeight: 1.55 }}>
-                {t('donation.safety.allergen')}
-              </li>
-              <li style={{ fontSize: '0.75rem', color: '#78350f', lineHeight: 1.55 }}>
-                {t('donation.safety.platform')}
-              </li>
-            </ul>
-          </div>
+        {/* Background image with blur + dark overlay */}
+        <div style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
+          <img src={produceBgImg} alt="" aria-hidden="true"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: 'blur(18px) brightness(0.45)', transform: 'scale(1.06)' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,30,18,0.72) 0%, rgba(15,45,28,0.85) 100%)' }} />
+        </div>
 
-          <div className="success-action-stack">
-            <button
-              type="button"
-              className="success-action-btn primary"
-              onClick={() => {
-                if (orgMode) {
-                  navigate('/org/listings', {
-                    state: {
-                      orgCode: initialOrgCode || successListing.orgCode || '',
-                      filterStatus: 'posted',
-                    },
-                  })
-                } else {
-                  navigate('/donor/listings', { state: { postcode: successListing.postcode } })
-                }
-              }}
-            >
-              {orgMode
-                ? t('donation.actions.backOrgListings', 'Back to food listings')
-                : t('donation.actions.backListings', 'Back to my listings')}
-            </button>
-            {orgMode ? (
-              <>
-                <button
-                  type="button"
-                  className="success-action-btn"
-                  onClick={() =>
-                    navigate('/org/intelligence', {
-                      state: { orgCode: initialOrgCode || successListing.orgCode || '' },
-                    })
-                  }
+        {/* Bloom accent */}
+        <div style={{ position: 'fixed', top: '10%', left: '20%', width: 500, height: 500, borderRadius: '50%', background: 'rgba(45,106,79,0.25)', filter: 'blur(100px)', pointerEvents: 'none', zIndex: 1 }} />
+        <div style={{ position: 'fixed', bottom: '5%', right: '15%', width: 380, height: 380, borderRadius: '50%', background: 'rgba(45,106,79,0.18)', filter: 'blur(90px)', pointerEvents: 'none', zIndex: 1 }} />
+
+        {/* Header — centered logo */}
+        <header style={{ position: 'sticky', top: 0, zIndex: 10, background: 'rgba(15,45,28,0.70)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(149,212,179,0.18)', height: 68, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button type="button" onClick={backAction} style={{ position: 'absolute', left: 32, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 500, fontFamily: 'inherit', padding: 0 }}
+            onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_back</span>
+            {orgMode ? 'Listings' : 'My Listings'}
+          </button>
+          <img src={logoUrl} alt="OutBackShare" style={{ height: 36, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+        </header>
+
+        {/* Content */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px 60px', position: 'relative', zIndex: 2 }}>
+          <div style={{ width: '100%', maxWidth: 520 }}>
+
+            {/* Success card */}
+            <div style={{ background: 'rgba(20,55,38,0.80)', border: '1px solid rgba(149,212,179,0.25)', borderRadius: 28, padding: '40px 40px 32px', backdropFilter: 'blur(24px)', boxShadow: '0 32px 80px rgba(0,0,0,0.4)' }}>
+
+              {/* Check icon */}
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+                <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(149,212,179,0.18)', border: '2px solid rgba(149,212,179,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 38, color: '#95d4b3' }}>check_circle</span>
+                </div>
+              </div>
+
+              {/* Title */}
+              <h2 style={{ fontSize: 32, fontWeight: 800, color: '#fff', textAlign: 'center', margin: '0 0 10px', letterSpacing: '-0.02em' }}>
+                {editMode ? t('donation.success.updatedTitle', 'Listing updated') : t('donation.success.title', 'Posted!')}
+              </h2>
+              <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', textAlign: 'center', margin: '0 0 24px', lineHeight: 1.6 }}>
+                {orgMode ? t('donation.success.orgMessage', 'Your listing is now visible to donors in your area.') : t('donation.success.donorMessage', 'Your listing is now visible to local organisations.')}
+              </p>
+
+              {/* Next step */}
+              {!orgMode && (
+                <div style={{ background: 'rgba(149,212,179,0.10)', border: '1px solid rgba(149,212,179,0.2)', borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#95d4b3', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6 }}>
+                    {t('donation.success.nextStepLabel', 'Next step')}
+                  </div>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', margin: 0, lineHeight: 1.65 }}>
+                    {t('donation.success.nextStepHint', "We'll notify you when an organisation claims your listing. You can then coordinate pickup through messages.")}
+                  </p>
+                </div>
+              )}
+
+              {/* Food safety */}
+              <div style={{ background: 'rgba(252,145,116,0.08)', border: '1px solid rgba(252,145,116,0.2)', borderRadius: 14, padding: '14px 16px', marginBottom: 28 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <span className="material-symbols-outlined" style={{ color: '#fc9174', fontSize: 18 }}>shield</span>
+                  <strong style={{ fontSize: 12, color: '#fc9174', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    {t('donation.safety.title', 'Food safety reminder')}
+                  </strong>
+                </div>
+                <ul style={{ margin: 0, paddingLeft: '1.1rem', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {[t('donation.safety.accuracy'), t('donation.safety.allergen'), t('donation.safety.platform')].map((text, i) => (
+                    <li key={i} style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>{text}</li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {/* Primary CTA */}
+                <button type="button" onClick={backAction}
+                  style={{ width: '100%', padding: '14px 20px', borderRadius: 14, border: 'none', background: '#95d4b3', color: '#002114', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', transition: 'opacity 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                 >
-                  {t('donation.actions.viewAreaIntelligence', 'Area Intelligence')}
+                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{orgMode ? 'list_alt' : 'list_alt'}</span>
+                  {orgMode ? t('donation.actions.backOrgListings', 'Back to food listings') : t('donation.actions.backListings', 'Back to my listings')}
                 </button>
-              </>
-            ) : (
-              <button
-                type="button"
-                className="success-action-btn"
-                onClick={() => navigate('/donor/post', { state: { postcode: successListing.postcode } })}
-              >
-                {t('donation.actions.postAnother', 'Post another listing')}
-              </button>
-            )}
-            {!orgMode ? (
-              <button
-                type="button"
-                className="success-action-btn"
-                onClick={() => navigate('/org/intelligence', { state: { fromDonor: true, returnPath: '/donor/listings' } })}
-              >
-                {t('donation.actions.viewHotspots', 'See where food is needed')}
-              </button>
-            ) : null}
-            <button
-              type="button"
-              className="success-action-btn"
-              onClick={() =>
-                navigate(orgMode ? '/form' : '/donor/post', {
-                  state: {
-                    postcode: successListing.postcode,
-                    editMode: true,
-                    listing: successListing,
-                    orgMode,
-                    orgCode: successListing.orgCode,
-                    orgName,
-                  },
-                })
-              }
-            >
-              {t('donation.actions.editListing', 'Edit this listing')}
-            </button>
-            <button
-              type="button"
-              className="success-action-btn text-danger"
-              onClick={() => handleRemoveListing(successListing)}
-            >
-              {t('donation.actions.removeListing', 'Remove this listing')}
-            </button>
+
+                {/* Secondary actions */}
+                {orgMode ? (
+                  <button type="button"
+                    onClick={() => navigate('/org/intelligence', { state: { orgCode: initialOrgCode || successListing.orgCode || '' } })}
+                    style={{ width: '100%', padding: '13px 20px', borderRadius: 14, border: '1px solid rgba(149,212,179,0.3)', background: 'rgba(149,212,179,0.08)', color: '#95d4b3', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', transition: 'background 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(149,212,179,0.15)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(149,212,179,0.08)'}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 17 }}>travel_explore</span>
+                    {t('donation.actions.viewAreaIntelligence', 'Area Intelligence')}
+                  </button>
+                ) : (
+                  <>
+                    <button type="button"
+                      onClick={() => navigate('/donor/post', { state: { postcode: successListing.postcode } })}
+                      style={{ width: '100%', padding: '13px 20px', borderRadius: 14, border: '1px solid rgba(149,212,179,0.3)', background: 'rgba(149,212,179,0.08)', color: '#95d4b3', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', transition: 'background 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(149,212,179,0.15)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(149,212,179,0.08)'}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 17 }}>add_circle</span>
+                      {t('donation.actions.postAnother', 'Post another listing')}
+                    </button>
+                    <button type="button"
+                      onClick={() => navigate('/org/intelligence', { state: { fromDonor: true, returnPath: '/donor/listings' } })}
+                      style={{ width: '100%', padding: '13px 20px', borderRadius: 14, border: '1px solid rgba(149,212,179,0.3)', background: 'rgba(149,212,179,0.08)', color: '#95d4b3', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit', transition: 'background 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(149,212,179,0.15)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(149,212,179,0.08)'}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: 17 }}>travel_explore</span>
+                      {t('donation.actions.viewHotspots', 'See where food is needed')}
+                    </button>
+                  </>
+                )}
+
+                {/* Muted actions */}
+                <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
+                  <button type="button"
+                    onClick={() => navigate(orgMode ? '/form' : '/donor/post', { state: { postcode: successListing.postcode, editMode: true, listing: successListing, orgMode, orgCode: successListing.orgCode, orgName } })}
+                    style={{ flex: 1, padding: '11px 16px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'inherit', transition: 'background 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.10)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 15 }}>edit</span>
+                    {t('donation.actions.editListing', 'Edit')}
+                  </button>
+                  <button type="button"
+                    onClick={() => handleRemoveListing(successListing)}
+                    style={{ flex: 1, padding: '11px 16px', borderRadius: 12, border: '1px solid rgba(255,180,171,0.2)', background: 'rgba(255,180,171,0.06)', color: '#ffb4ab', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'inherit', transition: 'background 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,180,171,0.12)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,180,171,0.06)'}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: 15 }}>delete</span>
+                    {t('donation.actions.removeListing', 'Remove')}
+                  </button>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>

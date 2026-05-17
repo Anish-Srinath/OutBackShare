@@ -2,7 +2,12 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import '../styles/LanguageSwitcher.css'
 
-const LanguageSwitcher = () => {
+const LANGUAGES = [
+  { code: 'en', label: 'EN' },
+  { code: 'zh', label: '中文' },
+]
+
+const LanguageSwitcher = ({ dark = false }) => {
   const { i18n } = useTranslation()
 
   const handleLanguageChange = (lang) => {
@@ -11,23 +16,18 @@ const LanguageSwitcher = () => {
   }
 
   return (
-    <div className="language-switcher" role="group" aria-label="Language switcher">
-      <button
-        className={`lang-btn ${i18n.language === 'en' ? 'active' : ''}`}
-        type="button"
-        aria-pressed={i18n.language === 'en'}
-        onClick={() => handleLanguageChange('en')}
-      >
-        English
-      </button>
-      <button
-        className={`lang-btn ${i18n.language === 'zh' ? 'active' : ''}`}
-        type="button"
-        aria-pressed={i18n.language === 'zh'}
-        onClick={() => handleLanguageChange('zh')}
-      >
-        中文
-      </button>
+    <div className={`language-switcher${dark ? ' language-switcher--dark' : ''}`} role="group" aria-label="Language switcher">
+      {LANGUAGES.map(({ code, label }) => (
+        <button
+          key={code}
+          className={`lang-btn${i18n.language === code ? ' active' : ''}`}
+          type="button"
+          aria-pressed={i18n.language === code}
+          onClick={() => handleLanguageChange(code)}
+        >
+          {label}
+        </button>
+      ))}
     </div>
   )
 }
