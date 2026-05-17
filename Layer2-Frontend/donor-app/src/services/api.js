@@ -147,6 +147,15 @@ export const markClaimMessagesRead = async (claimId, orgCode) => {
   return response.data
 }
 
+export const uploadPublicKey = async (claimId, orgCode, publicKey) => {
+  const response = await apiClient.patch(`/claims/${claimId}/keys`, { orgCode, publicKey })
+  return response.data
+}
+
+export const getPublicKeys = async (claimId, orgCode) => {
+  const response = await apiClient.get(`/claims/${claimId}/keys`, { params: { orgCode } })
+  return response.data
+}
 
 export const getPredictionRiskScores = async (filters = {}) => {
   const response = await apiClient.get('/predictions/risk-scores', { params: filters })

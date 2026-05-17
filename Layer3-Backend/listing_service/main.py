@@ -106,6 +106,9 @@ async def ensure_schema_extensions():
         """
     )
     await database.execute("CREATE INDEX IF NOT EXISTS idx_claim_message_claim_id ON claim_message(claim_id)")
+    await database.execute("ALTER TABLE claim_thread ADD COLUMN IF NOT EXISTS donor_public_key TEXT")
+    await database.execute("ALTER TABLE claim_thread ADD COLUMN IF NOT EXISTS claiming_public_key TEXT")
+    await database.execute("ALTER TABLE claim_message ADD COLUMN IF NOT EXISTS iv VARCHAR(64)")
     await database.execute("UPDATE food_listing SET status = 'collected' WHERE status = 'picked_up'")
 
 
@@ -268,9 +271,15 @@ class PickupRequest(BaseModel):
     orgId: str = Field(..., min_length=1, max_length=50)
 
 
+class PublicKeyUpload(BaseModel):
+    orgCode: str = Field(..., min_length=1, max_length=20)
+    publicKey: str = Field(..., min_length=10, max_length=2000)
+
+
 class MessageCreateRequest(BaseModel):
     senderOrgCode: str = Field(..., min_length=1, max_length=20)
-    content: str = Field(..., min_length=1, max_length=2000)
+    content: str = Field(..., min_length=1, max_length=6000)
+    iv: Optional[str] = Field(default=None, max_length=64)
 
 
 class ImageRecognitionResult(BaseModel):
@@ -325,6 +334,14 @@ def decode_description(raw: Optional[str]) -> tuple[Optional[str], Optional[str]
     return description, size_cue
 
 
+def _infer_org_type(org_code: str) -> str:
+    if org_code.startswith("DNR-"):
+        return "donor"
+    if org_code.startswith("CBO-"):
+        return "community_org"
+    return "donor"
+
+
 async def get_or_create_org(org_code: str) -> int:
     row = await database.fetch_one(
         "SELECT org_id FROM organization WHERE org_code = :org_code",
@@ -333,13 +350,14 @@ async def get_or_create_org(org_code: str) -> int:
     if row:
         return row["org_id"]
 
+    org_type = _infer_org_type(org_code)
     result = await database.fetch_one(
         """
         INSERT INTO organization (org_name, org_code, org_type)
-        VALUES (:org_name, :org_code, 'donor')
+        VALUES (:org_name, :org_code, :org_type)
         RETURNING org_id
         """,
-        {"org_name": org_code, "org_code": org_code},
+        {"org_name": org_code, "org_code": org_code, "org_type": org_type},
     )
     return result["org_id"]
 
@@ -933,7 +951,7 @@ async def list_claim_messages(request: Request, claim_id: str, orgCode: str):
     ensure_thread_member(thread_row, orgCode)
     rows = await database.fetch_all(
         """
-        SELECT message_id, claim_id, sender_type, sender_org_code, content, sent_at, read_at
+        SELECT message_id, claim_id, sender_type, sender_org_code, content, iv, sent_at, read_at
         FROM claim_message
         WHERE claim_id = :claim_id
         ORDER BY sent_at ASC
@@ -956,8 +974,8 @@ async def send_claim_message(request: Request, claim_id: str, payload: MessageCr
     sent_at = datetime.now()
     await database.execute(
         """
-        INSERT INTO claim_message (message_id, claim_id, sender_type, sender_org_code, content, sent_at)
-        VALUES (:message_id, :claim_id, :sender_type, :sender_org_code, :content, :sent_at)
+        INSERT INTO claim_message (message_id, claim_id, sender_type, sender_org_code, content, iv, sent_at)
+        VALUES (:message_id, :claim_id, :sender_type, :sender_org_code, :content, :iv, :sent_at)
         """,
         {
             "message_id": message_id,
@@ -965,6 +983,7 @@ async def send_claim_message(request: Request, claim_id: str, payload: MessageCr
             "sender_type": sender_type,
             "sender_org_code": sender_org_code,
             "content": payload.content.strip(),
+            "iv": payload.iv,
             "sent_at": sent_at,
         },
     )
@@ -974,6 +993,7 @@ async def send_claim_message(request: Request, claim_id: str, payload: MessageCr
         "sender_type": sender_type,
         "sender_org_code": sender_org_code,
         "content": payload.content.strip(),
+        "iv": payload.iv,
         "sent_at": sent_at,
         "read_at": None,
     }
@@ -999,6 +1019,31 @@ async def mark_claim_messages_read(request: Request, claim_id: str, orgCode: str
         {"read_at": now, "claim_id": claim_id, "reader_sender_type": reader_sender_type},
     )
     return {"success": True, "claim_id": claim_id, "read_at": now}
+
+
+@app.patch("/claims/{claim_id}/keys")
+@limiter.limit("10/minute")
+async def upload_public_key(request: Request, claim_id: str, payload: PublicKeyUpload):
+    thread_row = await fetch_claim_thread_or_404(claim_id)
+    org_code = payload.orgCode.strip()
+    ensure_thread_member(thread_row, org_code)
+    col = "donor_public_key" if org_code == thread_row["donor_org_code"] else "claiming_public_key"
+    await database.execute(
+        f"UPDATE claim_thread SET {col} = :key WHERE claim_id = :claim_id",
+        {"key": payload.publicKey, "claim_id": claim_id},
+    )
+    return {"success": True}
+
+
+@app.get("/claims/{claim_id}/keys")
+@limiter.limit("30/minute")
+async def get_claim_keys(request: Request, claim_id: str, orgCode: str):
+    thread_row = await fetch_claim_thread_or_404(claim_id)
+    ensure_thread_member(thread_row, orgCode)
+    return {
+        "donor_public_key": thread_row["donor_public_key"],
+        "claiming_public_key": thread_row["claiming_public_key"],
+    }
 
 
 @app.post("/image-recognition/recognize", response_model=ImageRecognitionResult)
@@ -1092,6 +1137,7 @@ async def check_code_availability(code: str):
 
 
 @app.post("/register", status_code=201)
+@limiter.limit("5/minute")
 async def register_identity(request: Request, body: RegisterRequest):
     try:
         result = await database.fetch_one(
