@@ -5,6 +5,7 @@ Loads the convonext_tiny trained weights once at startup via
 get_recognizer() and exposes a single predict(image_path) method.
 """
 
+import gc
 import sys
 import io
 import json
@@ -17,6 +18,15 @@ from torchvision import transforms, models
 from PIL import Image
 
 from lookup_tables import get_info
+
+# Limit BLAS/OpenMP thread pools — saves ~200MB on small CPU instances
+# (Railway Hobby tier) where multi-thread parallelism isn't helpful anyway.
+torch.set_num_threads(1)
+
+# Cap incoming image size before tensor conversion to keep peak memory low.
+# 512 is well above the model's 224 input requirement; transforms.Resize(256)
+# will further shrink it inside the pipeline.
+MAX_PIL_DIM = 512
 
 def_model_dir = Path(__file__).parent / "models"
 def_wgths = def_model_dir / "best_food101_convnext.pth"
@@ -73,17 +83,25 @@ class FoodRecognizer:
     def to_pil(self, image_inp):
         """
         Convert the input to a PIL Image regardless of its file type for
-        error free handling
+        error free handling. Downsamples large images in PIL space first
+        so the subsequent tensor pipeline never sees the full-resolution
+        bitmap — keeps inference peak memory predictable.
         """
 
         if isinstance(image_inp, bytes):
-            return Image.open(io.BytesIO(image_inp)).convert("RGB")
+            img = Image.open(io.BytesIO(image_inp)).convert("RGB")
         elif isinstance(image_inp, (str , Path)):
-            return Image.open(str(image_inp)).convert("RGB")
+            img = Image.open(str(image_inp)).convert("RGB")
         elif isinstance(image_inp, Image.Image):
-            return image_inp.convert("RGB")
+            img = image_inp.convert("RGB")
         else:
             raise TypeError(f"Unsupported image type: {type(image_inp)}")
+
+        # In-place downsample if either dimension exceeds MAX_PIL_DIM
+        # (e.g. 4000×3000 phone photo → ~512×384 thumbnail).
+        if max(img.size) > MAX_PIL_DIM:
+            img.thumbnail((MAX_PIL_DIM, MAX_PIL_DIM), Image.LANCZOS)
+        return img
 
     
             
@@ -94,7 +112,9 @@ class FoodRecognizer:
         img = self.to_pil(image_inp)
         tensor = img_transforms(img).unsqueeze(0)
 
-        with torch.no_grad():
+        # inference_mode is the modern replacement for no_grad and skips
+        # version-counter tracking → smaller activation footprint.
+        with torch.inference_mode():
             logits = self.model(tensor)
             probs = F.softmax(logits, dim=1)
 
@@ -112,6 +132,10 @@ class FoodRecognizer:
                 for idx in top_indices
             ]
 
+        # Release intermediate tensors before the (potentially heavy) DINO
+        # branch so they don't sit in memory through that call.
+        del tensor, logits, probs
+
         # Count items with DINO (runs its own no_grad block internally)
         # Only runs if the food class has a dino_prompt in the lookup table
         dino_prompt = top1_info["dino_prompt"]
@@ -119,6 +143,11 @@ class FoodRecognizer:
             quantity = self.dino_counter.count(img, dino_prompt)
         else:
             quantity = None
+
+        # Force GC so torch's CPU caching allocator hands memory back to the
+        # OS — critical on tight-RAM hosts (Railway Hobby) where idle memory
+        # creep eventually trips the OOM killer.
+        gc.collect()
 
         return {
             "name": top1_info["display_name"],
