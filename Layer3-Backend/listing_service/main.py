@@ -635,8 +635,13 @@ async def get_listings(
 
     # Defence in depth: even if the startup auto-expire job hasn't run, hide
     # listings whose expiry_date is already in the past from 'available'.
+    # Also hide listings that are missing required food-safety metadata
+    # (allergen_tags or storage_condition) — the frontend blocks claiming
+    # on those anyway, so leaving them visible is just noise on the board.
     if status == "available":
         query += " AND (fl.expiry_date IS NULL OR fl.expiry_date >= CURRENT_DATE)"
+        query += " AND fl.allergen_tags IS NOT NULL AND fl.allergen_tags <> ''"
+        query += " AND fl.storage_condition IS NOT NULL AND fl.storage_condition <> ''"
 
     if postcode:
         query += " AND fl.postcode = :postcode"
