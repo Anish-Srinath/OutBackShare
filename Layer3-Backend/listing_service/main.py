@@ -113,11 +113,18 @@ async def ensure_schema_extensions():
     await database.execute("ALTER TABLE organization ADD COLUMN IF NOT EXISTS preferred_location VARCHAR(500)")
     await database.execute("ALTER TABLE organization ADD COLUMN IF NOT EXISTS max_pickup_distance_km INT")
     await database.execute("UPDATE food_listing SET status = 'collected' WHERE status = 'picked_up'")
-    # Auto-mark past-expiry listings as 'expired' so stale items stop showing
-    # up under 'available'. Runs on every startup — cheap, idempotent.
+    # Legacy listings missing an expiry_date can never be claimed (the claim
+    # flow requires one). Give them a 2-day grace window so they become
+    # claimable instead of silently rotting in the board.
+    await database.execute(
+        "UPDATE food_listing SET expiry_date = CURRENT_DATE + INTERVAL '2 days' "
+        "WHERE status = 'available' AND expiry_date IS NULL"
+    )
+    # Then mark any listing whose expiry_date is already in the past as
+    # 'expired' so the 'available' query stops returning them.
     await database.execute(
         "UPDATE food_listing SET status = 'expired' "
-        "WHERE status = 'available' AND expiry_date IS NOT NULL AND expiry_date < CURRENT_DATE"
+        "WHERE status = 'available' AND expiry_date < CURRENT_DATE"
     )
 
 
