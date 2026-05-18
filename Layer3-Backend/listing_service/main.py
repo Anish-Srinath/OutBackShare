@@ -113,6 +113,12 @@ async def ensure_schema_extensions():
     await database.execute("ALTER TABLE organization ADD COLUMN IF NOT EXISTS preferred_location VARCHAR(500)")
     await database.execute("ALTER TABLE organization ADD COLUMN IF NOT EXISTS max_pickup_distance_km INT")
     await database.execute("UPDATE food_listing SET status = 'collected' WHERE status = 'picked_up'")
+    # Auto-mark past-expiry listings as 'expired' so stale items stop showing
+    # up under 'available'. Runs on every startup — cheap, idempotent.
+    await database.execute(
+        "UPDATE food_listing SET status = 'expired' "
+        "WHERE status = 'available' AND expiry_date IS NOT NULL AND expiry_date < CURRENT_DATE"
+    )
 
 
 @asynccontextmanager
@@ -591,6 +597,11 @@ async def get_listings(
     else:
         query += " AND fl.status = :status"
         params["status"] = status
+
+    # Defence in depth: even if the startup auto-expire job hasn't run, hide
+    # listings whose expiry_date is already in the past from 'available'.
+    if status == "available":
+        query += " AND (fl.expiry_date IS NULL OR fl.expiry_date >= CURRENT_DATE)"
 
     if postcode:
         query += " AND fl.postcode = :postcode"
