@@ -153,6 +153,11 @@ const PostFeedPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [brokenImageIds, setBrokenImageIds] = useState([])
+  const [loadedImageIds, setLoadedImageIds] = useState(() => new Set())
+  const markImageLoaded = (listingId) => setLoadedImageIds((prev) => {
+    if (prev.has(listingId)) return prev
+    const next = new Set(prev); next.add(listingId); return next
+  })
   const [chatClaim, setChatClaim] = useState(null)
 
   // ref for scrolling to the listings section (card 3 "Manage My Listings")
@@ -557,9 +562,34 @@ const PostFeedPage = () => {
                     >
                       {/* Image */}
                       <div style={{ position: 'relative', height: 192, flexShrink: 0, overflow: 'hidden' }}>
+                        <style>{`
+                          @keyframes pfp-img-shimmer {
+                            0%   { background-position: -200% 0; }
+                            100% { background-position:  200% 0; }
+                          }
+                        `}</style>
                         {shouldShowImage ? (
-                          <img src={imageUrl} alt={listing.foodType} onError={() => markImageBroken(listing.id)}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                          <>
+                            {/* Shimmer skeleton — shown until image finishes loading */}
+                            {!loadedImageIds.has(listing.id) && (
+                              <div aria-hidden="true" style={{
+                                position: 'absolute', inset: 0,
+                                background: 'linear-gradient(90deg, #ffdbd2 0%, #ffe9e0 50%, #ffdbd2 100%)',
+                                backgroundSize: '200% 100%',
+                                animation: 'pfp-img-shimmer 1.6s ease-in-out infinite',
+                              }} />
+                            )}
+                            <img
+                              src={imageUrl} alt={listing.foodType}
+                              onLoad={() => markImageLoaded(listing.id)}
+                              onError={() => markImageBroken(listing.id)}
+                              style={{
+                                width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+                                opacity: loadedImageIds.has(listing.id) ? 1 : 0,
+                                transition: 'opacity 0.35s ease',
+                              }}
+                            />
+                          </>
                         ) : (
                           <div style={{ width: '100%', height: '100%', background: '#ffdbd2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <span className="material-symbols-outlined" style={{ fontSize: 48, color: '#ffb4a1' }}>restaurant</span>

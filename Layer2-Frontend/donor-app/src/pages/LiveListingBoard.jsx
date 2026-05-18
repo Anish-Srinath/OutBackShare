@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { getAvailableListings, claimListing, unclaimListing, deleteListing, confirmPickup } from '../services/api'
 import { DIETARY_FILTER_OPTIONS, FILTER_OPTIONS, formatBestBeforeLabel, resolveListingCategory } from '../constants/listings'
 import { resolveImageUrl } from '../utils/imageUrl'
+import ListingImage from '../components/ListingImage'
 import { mergeListingSafetyFallback } from '../utils/listingSafety'
 import { getStoredOrgName } from '../utils/codeGeneration'
 import ChatModal from '../components/ChatModal'
@@ -809,14 +810,7 @@ const LiveListingBoard = () => {
                   >
                     {/* Image */}
                     <div style={{ position: 'relative', height: 180, flexShrink: 0, overflow: 'hidden' }}>
-                      {listing.photoUrl ? (
-                        <img src={resolveImageUrl(listing.photoUrl)} alt={listing.foodType}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                      ) : (
-                        <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: 48, color: 'rgba(149,212,179,0.3)' }}>image_not_supported</span>
-                        </div>
-                      )}
+                      <ListingImage photoUrl={listing.photoUrl} alt={listing.foodType} />
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(15,30,20,0.55) 0%, transparent 50%)' }} />
                       <span style={{ position: 'absolute', top: 12, left: 12, background: badge.bg, color: badge.color, padding: '4px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5, backdropFilter: 'blur(6px)' }}>
                         <span style={{ width: 6, height: 6, borderRadius: '50%', background: badge.color, display: 'block', opacity: 0.85 }} />
