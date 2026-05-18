@@ -504,15 +504,18 @@ async def fetch_claim_thread_or_404(claim_id: str):
 
 
 def ensure_thread_member(thread_row, org_code: str):
-    code = (org_code or "").strip()
-    if code not in {thread_row["donor_org_code"], thread_row["claiming_org_code"]}:
+    code = (org_code or "").strip().upper()
+    donor = (thread_row["donor_org_code"] or "").upper()
+    claiming = (thread_row["claiming_org_code"] or "").upper()
+    if code not in {donor, claiming}:
         raise HTTPException(status_code=403, detail="Access denied for this claim thread")
 
 
 def classify_sender(thread_row, sender_org_code: str) -> str:
-    if sender_org_code == thread_row["claiming_org_code"]:
+    code = (sender_org_code or "").strip().upper()
+    if code == (thread_row["claiming_org_code"] or "").upper():
         return "organisation"
-    if sender_org_code == thread_row["donor_org_code"]:
+    if code == (thread_row["donor_org_code"] or "").upper():
         return "donor"
     raise HTTPException(status_code=403, detail="Sender is not part of this claim thread")
 
@@ -1048,7 +1051,12 @@ async def upload_public_key(request: Request, claim_id: str, payload: PublicKeyU
     thread_row = await fetch_claim_thread_or_404(claim_id)
     org_code = payload.orgCode.strip()
     ensure_thread_member(thread_row, org_code)
-    col = "donor_public_key" if org_code == thread_row["donor_org_code"] else "claiming_public_key"
+    # Case-insensitive role match — codes can be stored in any case but the
+    # frontend may send a different case. Without normalising, the donor's
+    # key can land in claiming_public_key (and vice-versa), making both
+    # sides decrypt with the wrong key.
+    is_donor = org_code.upper() == (thread_row["donor_org_code"] or "").upper()
+    col = "donor_public_key" if is_donor else "claiming_public_key"
     await database.execute(
         f"UPDATE claim_thread SET {col} = :key WHERE claim_id = :claim_id",
         {"key": payload.publicKey, "claim_id": claim_id},

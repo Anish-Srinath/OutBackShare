@@ -21,9 +21,10 @@ export default function ChatModal({ claimId, listingTitle, orgCode, onClose }) {
 
   const messagesEndRef = useRef(null)
   const pollRef = useRef(null)
-  const keyPairRef = useRef(null)     // ephemeral CryptoKeyPair — private key never leaves browser
-  const sharedKeyRef = useRef(null)   // derived AES-GCM CryptoKey
-  const threadRef = useRef(null)      // mirrors thread state for use in interval closure
+  const keyPairRef = useRef(null)       // ephemeral CryptoKeyPair — private key never leaves browser
+  const sharedKeyRef = useRef(null)     // derived AES-GCM CryptoKey
+  const lastPeerKeyRef = useRef(null)   // peer JWK string used at last derivation — re-derive when it changes
+  const threadRef = useRef(null)        // mirrors thread state for use in interval closure
   const cryptoPhaseRef = useRef('init') // mirrors cryptoPhase to avoid stale interval closure
 
   // Keep both state and ref in sync
@@ -62,13 +63,18 @@ export default function ChatModal({ claimId, listingTitle, orgCode, onClose }) {
   }, [claimId, orgCode, decryptRow])
 
   // Try to get the peer's public key and derive the shared AES key.
-  // Returns true if successful, false if the peer hasn't uploaded their key yet.
+  // Returns true if a (new) key was derived, false if the peer hasn't
+  // uploaded yet or their key is unchanged since last derivation.
   const tryDeriveSharedKey = useCallback(async (t) => {
     try {
       const keys = await getPublicKeys(claimId, orgCode)
       const isClaimer = orgCode.toUpperCase() === String(t.claiming_org_code || '').toUpperCase()
       const peerKeyStr = isClaimer ? keys.donor_public_key : keys.claiming_public_key
       if (!peerKeyStr || !keyPairRef.current) return false
+
+      // Short-circuit: if the peer key string hasn't changed since the last
+      // successful derivation, the shared key is still valid.
+      if (peerKeyStr === lastPeerKeyRef.current) return false
 
       const peerCryptoKey = await importPublicKeyJwk(JSON.parse(peerKeyStr))
       sharedKeyRef.current = await deriveSharedKey(
@@ -78,6 +84,7 @@ export default function ChatModal({ claimId, listingTitle, orgCode, onClose }) {
         t.claiming_org_code,
         t.listing_id,
       )
+      lastPeerKeyRef.current = peerKeyStr
       setPhase('ready')
       return true
     } catch {
@@ -122,11 +129,17 @@ export default function ChatModal({ claimId, listingTitle, orgCode, onClose }) {
 
     pollRef.current = setInterval(async () => {
       if (cancelled) return
-      // If we're still waiting for the peer's public key, retry derivation first
-      if (cryptoPhaseRef.current === 'waiting_peer' && threadRef.current) {
+      // Always re-check the peer's public key, not just when waiting. If the
+      // peer refreshed their browser they will have uploaded a NEW ephemeral
+      // public key — we must re-derive against the new key, otherwise we
+      // keep decrypting their fresh messages with a stale shared key and
+      // every new message shows up as "[encrypted — key mismatch]".
+      // tryDeriveSharedKey is a no-op when the peer key is unchanged.
+      if (threadRef.current && cryptoPhaseRef.current !== 'init') {
         const derived = await tryDeriveSharedKey(threadRef.current)
         if (derived) {
-          // Re-fetch so any messages that arrived before key exchange get decrypted
+          // New key — re-fetch so any messages encrypted with the new key
+          // are decrypted on this cycle.
           await fetchMessages()
           return
         }
@@ -140,6 +153,7 @@ export default function ChatModal({ claimId, listingTitle, orgCode, onClose }) {
       // Erase ephemeral key material from memory (forward secrecy)
       keyPairRef.current = null
       sharedKeyRef.current = null
+      lastPeerKeyRef.current = null
     }
   }, [claimId, orgCode, fetchMessages, tryDeriveSharedKey, setPhase])
 
