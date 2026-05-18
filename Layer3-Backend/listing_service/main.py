@@ -4,6 +4,7 @@ Backed by PostgreSQL (outbackshare_db) via the `databases` async library.
 """
 
 import os
+import re
 import shutil
 import sys
 import uuid
@@ -113,11 +114,18 @@ async def ensure_schema_extensions():
     await database.execute("ALTER TABLE organization ADD COLUMN IF NOT EXISTS preferred_location VARCHAR(500)")
     await database.execute("ALTER TABLE organization ADD COLUMN IF NOT EXISTS max_pickup_distance_km INT")
     await database.execute("UPDATE food_listing SET status = 'collected' WHERE status = 'picked_up'")
-    # Auto-mark past-expiry listings as 'expired' so stale items stop showing
-    # up under 'available'. Runs on every startup — cheap, idempotent.
+    # Legacy listings missing an expiry_date can never be claimed (the claim
+    # flow requires one). Give them a 2-day grace window so they become
+    # claimable instead of silently rotting in the board.
+    await database.execute(
+        "UPDATE food_listing SET expiry_date = CURRENT_DATE + INTERVAL '2 days' "
+        "WHERE status = 'available' AND expiry_date IS NULL"
+    )
+    # Then mark any listing whose expiry_date is already in the past as
+    # 'expired' so the 'available' query stops returning them.
     await database.execute(
         "UPDATE food_listing SET status = 'expired' "
-        "WHERE status = 'available' AND expiry_date IS NOT NULL AND expiry_date < CURRENT_DATE"
+        "WHERE status = 'available' AND expiry_date < CURRENT_DATE"
     )
 
 
@@ -149,6 +157,9 @@ app = FastAPI(
     description="API for creating and managing food listings",
     version="0.3.0",
     lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
 )
 
 app.state.limiter = limiter
@@ -178,6 +189,27 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
+
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response as StarletteResponse
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
+
+SAFE_CODE_RE = re.compile(r'^[A-Z0-9\-]{3,20}$')
+
+MAGIC_BYTES = {
+    "image/jpeg": b'\xff\xd8\xff',
+    "image/png":  b'\x89PNG',
+    "image/webp": b'RIFF',
+}
 
 ALLERGEN_OPTIONS = {"nuts", "dairy", "gluten", "eggs", "soy", "sesame", "shellfish", "no known allergens"}
 STORAGE_OPTIONS = {"room_temp", "refrigerated", "frozen", "keep_dry"}
@@ -497,15 +529,18 @@ async def fetch_claim_thread_or_404(claim_id: str):
 
 
 def ensure_thread_member(thread_row, org_code: str):
-    code = (org_code or "").strip()
-    if code not in {thread_row["donor_org_code"], thread_row["claiming_org_code"]}:
+    code = (org_code or "").strip().upper()
+    donor = (thread_row["donor_org_code"] or "").upper()
+    claiming = (thread_row["claiming_org_code"] or "").upper()
+    if code not in {donor, claiming}:
         raise HTTPException(status_code=403, detail="Access denied for this claim thread")
 
 
 def classify_sender(thread_row, sender_org_code: str) -> str:
-    if sender_org_code == thread_row["claiming_org_code"]:
+    code = (sender_org_code or "").strip().upper()
+    if code == (thread_row["claiming_org_code"] or "").upper():
         return "organisation"
-    if sender_org_code == thread_row["donor_org_code"]:
+    if code == (thread_row["donor_org_code"] or "").upper():
         return "donor"
     raise HTTPException(status_code=403, detail="Sender is not part of this claim thread")
 
@@ -1041,7 +1076,12 @@ async def upload_public_key(request: Request, claim_id: str, payload: PublicKeyU
     thread_row = await fetch_claim_thread_or_404(claim_id)
     org_code = payload.orgCode.strip()
     ensure_thread_member(thread_row, org_code)
-    col = "donor_public_key" if org_code == thread_row["donor_org_code"] else "claiming_public_key"
+    # Case-insensitive role match — codes can be stored in any case but the
+    # frontend may send a different case. Without normalising, the donor's
+    # key can land in claiming_public_key (and vice-versa), making both
+    # sides decrypt with the wrong key.
+    is_donor = org_code.upper() == (thread_row["donor_org_code"] or "").upper()
+    col = "donor_public_key" if is_donor else "claiming_public_key"
     await database.execute(
         f"UPDATE claim_thread SET {col} = :key WHERE claim_id = :claim_id",
         {"key": payload.publicKey, "claim_id": claim_id},
@@ -1095,8 +1135,14 @@ async def upload_food_image(request: Request, image: UploadFile = File(...)):
         raise HTTPException(status_code=415, detail="Unsupported file type. Use JPEG, PNG, or WebP.")
 
     contents = await image.read()
+    if len(contents) == 0:
+        raise HTTPException(status_code=400, detail="File is empty")
     if len(contents) > MAX_SIZE:
         raise HTTPException(status_code=413, detail="File too large. Maximum size is 5 MB.")
+
+    expected_magic = MAGIC_BYTES.get(image.content_type, b'')
+    if expected_magic and not contents[:4].startswith(expected_magic):
+        raise HTTPException(status_code=415, detail="File content does not match declared type")
 
     ext = EXT_MAP[image.content_type]
     filename = f"{uuid.uuid4()}{ext}"
@@ -1142,7 +1188,10 @@ class RegisterRequest(BaseModel):
 
 
 @app.get("/check-code")
-async def check_code_availability(code: str):
+@limiter.limit("10/minute")
+async def check_code_availability(request: Request, code: str):
+    if not SAFE_CODE_RE.match(code):
+        raise HTTPException(status_code=400, detail="Invalid code format")
     row = await database.fetch_one(
         "SELECT org_id FROM organization WHERE UPPER(org_code) = UPPER(:code)",
         {"code": code},
