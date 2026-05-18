@@ -43,9 +43,29 @@ html {
   text-size-adjust: 100%;
 }
 
+/* =============================================================
+   Global dot-pattern texture
+   - Defined as a single CSS variable so it stays consistent everywhere
+   - Applied to body + all dark-themed page wrappers via attribute
+     selectors (overrides inline `background:` shorthand)
+   ============================================================= */
+:root {
+  /* Dark theme: light green dots on dark green backgrounds */
+  --bg-dot-pattern:
+    radial-gradient(circle at 1px 1px, rgba(149, 212, 179, 0.18) 1.2px, transparent 0);
+  /* Light theme: warm muted brown dots on cream backgrounds */
+  --bg-dot-pattern-light:
+    radial-gradient(circle at 1px 1px, rgba(120, 90, 60, 0.18) 1.2px, transparent 0);
+  --bg-dot-size: 22px 22px;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--bg);
+  /* --bg is cream (#FAFAF7), so use the warm dark dots for visibility */
+  background-image: var(--bg-dot-pattern-light);
+  background-size: var(--bg-dot-size);
+  background-attachment: fixed;
   color: var(--text-primary);
   font-size: var(--fs-body);
   line-height: var(--lh-body);
@@ -53,6 +73,27 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'cv11', 'ss01', 'ss03';
+}
+
+/* Dark-themed pages (donor / org workspaces) — dark green wrapper.
+   Browsers may render hex as rgb() in the style attribute, match both. */
+[style*="#1b4332"],
+[style*="rgb(27, 67, 50)"],
+[style*="rgb(27,67,50)"] {
+  background-image: var(--bg-dot-pattern) !important;
+  background-size: var(--bg-dot-size) !important;
+  background-attachment: fixed !important;
+}
+
+/* Light-themed pages (HomePage / RegisterPage / PostcodeInputPage) — cream
+   wrappers with #f9f9f6. We also require 100vh in the style so we only
+   match full-page wrappers, not small cards/badges that reuse the colour. */
+[style*="#f9f9f6"][style*="100vh"],
+[style*="rgb(249, 249, 246)"][style*="100vh"],
+[style*="rgb(249,249,246)"][style*="100vh"] {
+  background-image: var(--bg-dot-pattern-light) !important;
+  background-size: var(--bg-dot-size) !important;
+  background-attachment: fixed !important;
 }
 
 #root { min-height: 100vh; }

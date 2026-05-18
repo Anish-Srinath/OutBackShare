@@ -191,11 +191,43 @@ export default function CoverageGapMap() {
 
           {/* Map */}
           <div style={{ flex: 1, position: 'relative' }}>
-            {loading && (
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, background: 'rgba(27,67,50,0.85)' }}>
-                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14 }}>Loading all risk zones…</p>
+            <style>{`
+              @keyframes cgm-pulse-ring {
+                0%   { transform: scale(0.6); opacity: 0.9; }
+                100% { transform: scale(2.6); opacity: 0;   }
+              }
+              @keyframes cgm-shimmer {
+                0%   { background-position: -200% 0; }
+                100% { background-position:  200% 0; }
+              }
+              @keyframes cgm-dot-bounce {
+                0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+                40%           { transform: scale(1);   opacity: 1;   }
+              }
+            `}</style>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10, gap: 28, background: 'linear-gradient(135deg, rgba(15,55,40,0.95) 0%, rgba(27,67,50,0.95) 100%)', opacity: loading ? 1 : 0, pointerEvents: loading ? 'auto' : 'none', transition: 'opacity 1s ease', overflow: 'hidden' }}>
+              {/* Shimmer scan band */}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(149,212,179,0.08) 50%, transparent 100%)', backgroundSize: '200% 100%', animation: 'cgm-shimmer 2.4s ease-in-out infinite' }} />
+
+              {/* Pulsing radar */}
+              <div style={{ position: 'relative', width: 80, height: 80, zIndex: 2 }}>
+                {[0, 1, 2].map(i => (
+                  <div key={i} style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid rgba(149,212,179,0.6)', animation: `cgm-pulse-ring 2.2s ease-out ${i * 0.7}s infinite` }} />
+                ))}
+                <div style={{ position: 'absolute', inset: '30%', borderRadius: '50%', background: 'rgba(149,212,179,0.9)', boxShadow: '0 0 24px rgba(149,212,179,0.7)' }} />
               </div>
-            )}
+
+              {/* Text + bouncing dots */}
+              <div style={{ textAlign: 'center', zIndex: 2 }}>
+                <p style={{ color: '#fff', fontSize: 16, fontWeight: 600, margin: '0 0 6px 0' }}>Mapping risk zones across Victoria</p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
+                  <span>Loading</span>
+                  {[0, 1, 2].map(i => (
+                    <span key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: '#95d4b3', display: 'inline-block', animation: `cgm-dot-bounce 1.4s ease-in-out ${i * 0.16}s infinite` }} />
+                  ))}
+                </div>
+              </div>
+            </div>
             <ChoroplethMap
               zones={mapZones}
               selectedPostcode={selected || ''}

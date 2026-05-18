@@ -79,24 +79,8 @@ function PasswordGate({ expectedPassword, children }) {
 
   return (
     <div className="site-gate-shell">
-      <div className="site-gate-layout">
-        <section className="site-gate-intro">
-          <h1>{t('accessGate.heroTitle')}</h1>
-          <p className="site-gate-intro-copy">
-            {t('accessGate.heroCopy')}
-          </p>
-
-          <ul className="site-gate-value-list" aria-label={t('accessGate.highlightsLabel')}>
-            <li>{t('accessGate.bullets.post')}</li>
-            <li>{t('accessGate.bullets.coordinate')}</li>
-            <li>{t('accessGate.bullets.spot')}</li>
-          </ul>
-
-          <p className="site-gate-trust">{t('accessGate.trust')}</p>
-        </section>
-
+      <div className="site-gate-layout site-gate-layout--centered">
         <div className="site-gate-card">
-          <div className="site-gate-badge">{t('accessGate.badge')}</div>
           <h2>{t('accessGate.title')}</h2>
           <p>{t('accessGate.subtitle')}</p>
 

@@ -114,12 +114,12 @@ export default function HomePage() {
               </p>
 
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                <button className="hero-btn-primary" onClick={() => navigate('/register/donor')}>
-                  Start Donating
-                  <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>arrow_forward</span>
-                </button>
-                <button className="hero-btn-ghost" onClick={() => navigate('/register/org')}>
-                  Find Food Support
+                <button
+                  className="hero-btn-primary"
+                  onClick={() => document.getElementById('pathfinding').scrollIntoView({ behavior: 'smooth' })}
+                >
+                  Start
+                  <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>arrow_downward</span>
                 </button>
               </div>
             </div>

@@ -10,7 +10,6 @@ import { resolveImageUrl } from '../utils/imageUrl'
 import { getSavedDonorPostcode, saveDonorPostcode } from '../utils/donorPostcode'
 import { mergeListingSafetyFallback } from '../utils/listingSafety'
 import logoUrl from '../assets/outbackshare-logo.png'
-import mapPreviewImg from '../assets/donor-map-preview.jpg'
 import textureImg from '../assets/post-food-texture.jpg'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 
@@ -407,87 +406,6 @@ const PostFeedPage = () => {
             ))}
           </section>
 
-          {/* ── Map + Analytics (5-col asymmetric) ── */}
-          <section style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 20, marginBottom: 40 }}>
-            {/* Map preview — routes to Area Intelligence */}
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={() => navigate('/org/intelligence', { state: donorNavState })}
-              onKeyDown={e => e.key === 'Enter' && navigate('/org/intelligence', { state: donorNavState })}
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(149,212,179,0.15)', borderRadius: 24, overflow: 'hidden', position: 'relative', minHeight: 260, cursor: 'pointer' }}
-            >
-              <img src={mapPreviewImg} alt="Active demand near you" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)' }} />
-              <div style={{ position: 'absolute', top: 16, left: 20 }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)', padding: '4px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, color: '#e53e3e' }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#e53e3e', display: 'inline-block' }} />
-                  Live demand data
-                </div>
-              </div>
-              <div style={{ position: 'absolute', bottom: 24, left: 24, right: 24, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
-                <div style={{ color: '#fff' }}>
-                  <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 4, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>Area Intelligence — Your Region</div>
-                  <div style={{ fontSize: 14, opacity: 0.9, textShadow: '0 1px 4px rgba(0,0,0,0.2)' }}>Click to explore AI-predicted demand alerts near you.</div>
-                </div>
-                <div style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)', borderRadius: 999, padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#1a1c1b', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                  Open map <span className="material-symbols-outlined" style={{ fontSize: 16 }}>open_in_full</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Map features panel */}
-            <div style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(149,212,179,0.15)', borderRadius: 24, padding: '24px 24px 20px', display: 'flex', flexDirection: 'column', backdropFilter: 'blur(10px)' }}>
-              <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 4 }}>Explore the Map Tools</div>
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: 18 }}>Three live views that show exactly where your food is needed most.</div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-
-                {/* Area Intelligence — passes donor context so back-button returns here */}
-                <button type="button"
-                  onClick={() => navigate('/org/intelligence', { state: donorNavState })}
-                  style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px', borderRadius: 14, border: '1px solid rgba(252,145,116,0.2)', background: 'rgba(252,145,116,0.06)', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', transition: 'background 0.15s, border-color 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(252,145,116,0.12)'; e.currentTarget.style.borderColor = 'rgba(252,145,116,0.35)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(252,145,116,0.06)'; e.currentTarget.style.borderColor = 'rgba(252,145,116,0.2)' }}
-                >
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: '#ffdbd2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#9a442d' }}>travel_explore</span>
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: '#fc9174' }}>Area Intelligence</span>
-                      <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)' }}>arrow_forward</span>
-                    </div>
-                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', margin: 0, lineHeight: 1.6 }}>
-                      AI-predicted demand spikes and supply gaps across all postcodes.
-                    </p>
-                  </div>
-                </button>
-
-                {/* Around Me — passes donor context so back-button returns here */}
-                <button type="button"
-                  onClick={() => navigate('/org/coverage-map', { state: donorNavState })}
-                  style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px', borderRadius: 14, border: '1px solid rgba(194,196,229,0.2)', background: 'rgba(194,196,229,0.06)', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', transition: 'background 0.15s, border-color 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(194,196,229,0.12)'; e.currentTarget.style.borderColor = 'rgba(194,196,229,0.35)' }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(194,196,229,0.06)'; e.currentTarget.style.borderColor = 'rgba(194,196,229,0.2)' }}
-                >
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: '#dfe0ff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#424561' }}>near_me</span>
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: '#c2c4e5' }}>Around Me</span>
-                      <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)' }}>arrow_forward</span>
-                    </div>
-                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', margin: 0, lineHeight: 1.6 }}>
-                      Full coverage map — every scored postcode from high to low risk.
-                    </p>
-                  </div>
-                </button>
-
-              </div>
-            </div>
-          </section>
 
           {/* ── Listings section (ref target for card 3) ── */}
           <div ref={listingsSectionRef}>

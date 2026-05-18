@@ -260,14 +260,92 @@ export default function OrgIntelligencePage() {
         </header>
 
         {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, color: 'rgba(255,255,255,0.6)', fontSize: 16 }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 24, animation: 'spin 1s linear infinite' }}>progress_activity</span>
-            Loading intelligence data…
-          </div>
+          <>
+            <style>{`
+              @keyframes intel-shimmer {
+                0%   { background-position: -200% 0; }
+                100% { background-position:  200% 0; }
+              }
+              @keyframes intel-pulse-ring {
+                0%   { transform: scale(0.6); opacity: 0.9; }
+                100% { transform: scale(2.5); opacity: 0;   }
+              }
+              @keyframes intel-fade-in {
+                from { opacity: 0; transform: translateY(6px); }
+                to   { opacity: 1; transform: translateY(0);   }
+              }
+              .intel-skel {
+                background: linear-gradient(
+                  90deg,
+                  rgba(255,255,255,0.04) 0%,
+                  rgba(255,255,255,0.10) 50%,
+                  rgba(255,255,255,0.04) 100%
+                );
+                background-size: 200% 100%;
+                animation: intel-shimmer 1.6s ease-in-out infinite;
+                border-radius: 14px;
+              }
+              .intel-content-enter { animation: intel-fade-in 1s ease both; }
+            `}</style>
+
+            {/* Skeleton — 3 metric cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20, marginBottom: 36 }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 22, padding: '24px 26px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div className="intel-skel" style={{ height: 14, width: '50%' }} />
+                  <div className="intel-skel" style={{ height: 36, width: '70%' }} />
+                  <div className="intel-skel" style={{ height: 12, width: '85%' }} />
+                </div>
+              ))}
+            </div>
+
+            {/* Skeleton — bento grid (map + feed) */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: 20, alignItems: 'start' }}>
+              {/* Map placeholder with pulsing radar */}
+              <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 26, height: 700, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="intel-skel" style={{ position: 'absolute', inset: 0, borderRadius: 26 }} />
+                {/* Pulse rings */}
+                <div style={{ position: 'relative', width: 80, height: 80, zIndex: 2 }}>
+                  {[0, 1, 2].map(i => (
+                    <div key={i} style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '2px solid rgba(149,212,179,0.55)', animation: `intel-pulse-ring 2.2s ease-out ${i * 0.7}s infinite` }} />
+                  ))}
+                  <div style={{ position: 'absolute', inset: '30%', borderRadius: '50%', background: 'rgba(149,212,179,0.85)', boxShadow: '0 0 20px rgba(149,212,179,0.6)' }} />
+                </div>
+                <div style={{ position: 'absolute', bottom: 30, left: 0, right: 0, textAlign: 'center', zIndex: 2 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, fontWeight: 500, margin: 0 }}>Mapping demand signals across Victoria…</p>
+                </div>
+              </div>
+
+              {/* Feed sidebar skeleton */}
+              <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 26, padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div className="intel-skel" style={{ height: 20, width: 120 }} />
+                  <div className="intel-skel" style={{ height: 22, width: 56, borderRadius: 999 }} />
+                </div>
+                {[0, 1, 2, 3].map(i => (
+                  <div key={i} style={{ display: 'flex', gap: 12, padding: '12px 0', borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
+                    <div className="intel-skel" style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0 }} />
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div className="intel-skel" style={{ height: 12, width: '60%' }} />
+                      <div className="intel-skel" style={{ height: 10, width: '85%' }} />
+                      <div className="intel-skel" style={{ height: 10, width: '40%' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
         ) : error ? (
           <div style={{ color: '#fc9174', fontSize: 16 }}>Could not load intelligence data. Check your connection.</div>
         ) : (
-          <>
+          <div className="intel-content-enter">
+            <style>{`
+              @keyframes intel-fade-in {
+                from { opacity: 0; transform: translateY(6px); }
+                to   { opacity: 1; transform: translateY(0);   }
+              }
+              .intel-content-enter { animation: intel-fade-in 1s ease both; }
+            `}</style>
             {/* ── Metric cards (real data, tab-aware) ── */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20, marginBottom: 36 }}>
               {metricCards.map(card => (
@@ -507,7 +585,7 @@ export default function OrgIntelligencePage() {
                 </div>
               </aside>
             </div>
-          </>
+          </div>
         )}
       </main>
     </div>
