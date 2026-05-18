@@ -27,16 +27,20 @@ export default function OrgIntelligencePage() {
   const [alertToneFilter, setAlertToneFilter]   = useState('all')
   const [coverageFilter, setCoverageFilter]     = useState('all')
 
-  const savedOrgSession = (() => {
-    try { return JSON.parse(window.localStorage.getItem('crisislink-org-session') || '{}') }
-    catch { return {} }
-  })()
-  const orgCode = location.state?.orgCode || savedOrgSession.orgCode || 'HCFB-2841'
   const fromDonor = useRef(location.state?.fromDonor || false)
   const donorReturnPath = useRef(location.state?.returnPath || '/donor/listings')
 
+  const savedOrgSession = (() => {
+    if (fromDonor.current) return {}
+    try { return JSON.parse(window.localStorage.getItem('crisislink-org-session') || '{}') }
+    catch { return {} }
+  })()
+  const orgCode = fromDonor.current ? null : (location.state?.orgCode || savedOrgSession.orgCode || 'HCFB-2841')
+
   useEffect(() => {
-    window.localStorage.setItem('crisislink-org-session', JSON.stringify({ orgCode }))
+    if (!fromDonor.current && orgCode) {
+      window.localStorage.setItem('crisislink-org-session', JSON.stringify({ orgCode }))
+    }
   }, [orgCode])
 
   useEffect(() => {
@@ -231,10 +235,17 @@ export default function OrgIntelligencePage() {
         </nav>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <LanguageSwitcher dark />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 999, padding: '5px 14px' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#95d4b3' }}>groups</span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>{orgCode}</span>
-          </div>
+          {fromDonor.current ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(149,212,179,0.12)', border: '1px solid rgba(149,212,179,0.3)', borderRadius: 999, padding: '5px 14px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#95d4b3' }}>volunteer_activism</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#95d4b3' }}>Donor view</span>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 999, padding: '5px 14px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 16, color: '#95d4b3' }}>groups</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>{orgCode}</span>
+            </div>
+          )}
         </div>
       </header>
 
