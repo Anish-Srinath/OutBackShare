@@ -5,10 +5,12 @@ import { saveDonorPostcode } from '../utils/donorPostcode'
 import logoUrl from '../assets/outbackshare-logo.png'
 import produceImg from '../assets/postcode-produce.jpg'
 import mapImg from '../assets/postcode-map.jpg'
+import { useIsMobile } from '../utils/useIsMobile'
 
 const PostcodeInputPage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const isMobile = useIsMobile()
   const [location, setLocation] = useState('')
   const [error, setError] = useState('')
 
@@ -48,12 +50,12 @@ const PostcodeInputPage = () => {
   }
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, system-ui, sans-serif', background: '#f9f9f6', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'Inter, system-ui, sans-serif', background: '#f9f9f6', overflow: isMobile ? 'auto' : 'hidden' }}>
 
       {/* Fixed header */}
       <header style={{
         flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 48px', height: 76,
+        padding: `0 ${isMobile ? 16 : 48}px`, height: isMobile ? 64 : 76,
         background: 'rgba(249,249,246,0.92)', backdropFilter: 'blur(14px)',
         borderBottom: '1px solid #e8e4dd', zIndex: 50
       }}>
@@ -73,10 +75,10 @@ const PostcodeInputPage = () => {
       </header>
 
       {/* Split body — fills remaining height exactly */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'row', minHeight: 0 }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: 0 }}>
 
         {/* Left: Image panel */}
-        <section style={{ position: 'relative', width: '50%', flexShrink: 0, overflow: 'hidden' }}>
+        <section style={{ position: 'relative', width: isMobile ? '100%' : '50%', height: isMobile ? 240 : 'auto', flexShrink: 0, overflow: 'hidden' }}>
           <img
             src={produceImg}
             alt="Community produce sharing"
@@ -84,7 +86,7 @@ const PostcodeInputPage = () => {
           />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(15,82,56,0.4), transparent), linear-gradient(to top, rgba(8,24,16,0.72) 0%, transparent 52%)' }} />
           {/* Caption */}
-          <div style={{ position: 'absolute', bottom: 52, left: 52, maxWidth: 420 }}>
+          <div style={{ position: 'absolute', bottom: isMobile ? 20 : 52, left: isMobile ? 20 : 52, right: isMobile ? 20 : 'auto', maxWidth: 420 }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.93)', backdropFilter: 'blur(12px)', padding: '5px 14px', borderRadius: 999, border: '1px solid #e8e8e5', marginBottom: 18 }}>
               <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#9a442d', fontVariationSettings: "'FILL' 1" }}>favorite</span>
               <span style={{ fontSize: 11, fontWeight: 600, color: '#9a442d', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Join 12,000+ Stewards</span>
@@ -99,10 +101,10 @@ const PostcodeInputPage = () => {
         </section>
 
         {/* Right: Form panel — fills height, form spreads with space-between */}
-        <section style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#f9f9f6', padding: '0 64px', overflowY: 'auto' }}>
+        <section style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#f9f9f6', padding: `0 ${isMobile ? 20 : 64}px`, overflowY: 'auto' }}>
           <form
             onSubmit={handleSubmit}
-            style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '52px 0 48px' }}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: isMobile ? 28 : 0, padding: `${isMobile ? 28 : 52}px 0 ${isMobile ? 32 : 48}px` }}
           >
 
             {/* 1 — Heading */}
@@ -178,7 +180,7 @@ const PostcodeInputPage = () => {
             </div>
 
             {/* 3 — Bento grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, paddingTop: 28, borderTop: '1px solid #e8e8e5' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14, paddingTop: 28, borderTop: '1px solid #e8e8e5' }}>
               <div
                 style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '18px 16px', borderRadius: 14, transition: 'background 0.2s', cursor: 'default' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#eeeeeb'}

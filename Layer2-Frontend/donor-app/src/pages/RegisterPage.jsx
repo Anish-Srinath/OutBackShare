@@ -14,6 +14,7 @@ import {
 import { registerUser, checkCodeAvailability } from '../services/api'
 import logoUrl from '../assets/outbackshare-logo.png'
 import donorBgImg from '../assets/Gemini_Generated_Image_9mucwo9mucwo9muc.png'
+import { useIsMobile } from '../utils/useIsMobile'
 
 const sanitiseText      = (v) => v.replace(/[<>"'`;]/g, '').slice(0, 500)
 const sanitiseCodeInput = (v) => v.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 20)
@@ -195,6 +196,7 @@ const RegisterPage = () => {
   const { role } = useParams()
   const navigate  = useNavigate()
   const isDonor   = role === 'donor'
+  const isMobile  = useIsMobile()
 
   const [step, setStep] = useState('signin')
 
@@ -331,7 +333,7 @@ const RegisterPage = () => {
         {/* Top strip */}
         <div style={{
           position: 'sticky', top: 0, zIndex: 40, height: '64px',
-          display: 'flex', alignItems: 'center', padding: '0 48px',
+          display: 'flex', alignItems: 'center', padding: `0 ${isMobile ? 16 : 48}px`,
           background: 'rgba(249,249,246,0.94)', backdropFilter: 'blur(14px)',
           borderBottom: '1px solid #e2e3e0'
         }}>
@@ -345,7 +347,7 @@ const RegisterPage = () => {
         </div>
 
         {/* Form body — fills the panel width with generous horizontal padding */}
-        <div style={{ flex: 1, padding: '52px 64px 72px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, padding: `${isMobile ? 28 : 52}px ${isMobile ? 20 : 64}px ${isMobile ? 40 : 72}px`, display: 'flex', flexDirection: 'column' }}>
 
           {/* Step icon + heading — left aligned, large */}
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', marginBottom: '40px' }}>

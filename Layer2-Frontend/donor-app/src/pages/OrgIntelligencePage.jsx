@@ -7,6 +7,7 @@ import '../styles/LiveListingBoard.css'
 import logoUrl from '../assets/outbackshare-logo.png'
 import textureImg from '../assets/post-food-texture.jpg'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import { useIsMobile } from '../utils/useIsMobile'
 
 function suburbName(postcode) {
   return suburbLookup[String(postcode)] || `Postcode ${postcode}`
@@ -18,6 +19,8 @@ const MED_CONF  = 70
 export default function OrgIntelligencePage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const isMobile = useIsMobile()
+  const SIDE_PAD = isMobile ? 16 : 48
 
   const [loading, setLoading]           = useState(true)
   const [error, setError]               = useState('')
@@ -209,7 +212,7 @@ export default function OrgIntelligencePage() {
       <div style={{ position: 'fixed', inset: 0, backgroundImage: `url(${textureImg})`, backgroundSize: 'cover', opacity: 0.05, zIndex: 0, pointerEvents: 'none' }} />
 
       {/* ── Header ── */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(27,67,50,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 48px', height: 68 }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(27,67,50,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `0 ${SIDE_PAD}px`, height: 68 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <button type="button" onClick={() => fromDonor.current ? navigate(donorReturnPath.current) : navigate('/org/listings', { state: { orgCode } })}
             style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.75)' }}
@@ -249,7 +252,7 @@ export default function OrgIntelligencePage() {
         </div>
       </header>
 
-      <main style={{ position: 'relative', zIndex: 1, maxWidth: 1280, margin: '0 auto', padding: '52px 32px 80px' }}>
+      <main style={{ position: 'relative', zIndex: 1, maxWidth: 1280, margin: '0 auto', padding: `${isMobile ? 24 : 52}px ${SIDE_PAD}px 80px` }}>
 
         {/* ── Page heading ── */}
         <header style={{ marginBottom: 40 }}>
@@ -289,7 +292,7 @@ export default function OrgIntelligencePage() {
             `}</style>
 
             {/* Skeleton — 3 metric cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20, marginBottom: 36 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3,1fr)', gap: 20, marginBottom: 36 }}>
               {[0, 1, 2].map(i => (
                 <div key={i} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 22, padding: '24px 26px', display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div className="intel-skel" style={{ height: 14, width: '50%' }} />
@@ -300,7 +303,7 @@ export default function OrgIntelligencePage() {
             </div>
 
             {/* Skeleton — bento grid (map + feed) */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: 20, alignItems: 'start' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 420px', gap: 20, alignItems: 'start' }}>
               {/* Map placeholder with pulsing radar */}
               <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 26, height: 700, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div className="intel-skel" style={{ position: 'absolute', inset: 0, borderRadius: 26 }} />
@@ -347,7 +350,7 @@ export default function OrgIntelligencePage() {
               .intel-content-enter { animation: intel-fade-in 1s ease both; }
             `}</style>
             {/* ── Metric cards (real data, tab-aware) ── */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20, marginBottom: 36 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3,1fr)', gap: 20, marginBottom: 36 }}>
               {metricCards.map(card => (
                 <div key={card.label} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 22, padding: '24px 26px', backdropFilter: 'blur(10px)', display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -401,7 +404,7 @@ export default function OrgIntelligencePage() {
             </div>
 
             {/* ── Bento grid ── */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: 20, alignItems: 'start' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 420px', gap: 20, alignItems: 'start' }}>
 
               {/* Left: choropleth map */}
               <section style={{ background: '#fff', borderRadius: 26, overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.35)', position: 'relative' }}>

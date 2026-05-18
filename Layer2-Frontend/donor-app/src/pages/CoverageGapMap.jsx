@@ -6,6 +6,7 @@ import suburbLookup from '../data/vic_postcode_suburbs.json'
 import logoUrl from '../assets/outbackshare-logo.png'
 import textureImg from '../assets/post-food-texture.jpg'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import { useIsMobile } from '../utils/useIsMobile'
 
 // Matches backend _risk_label() thresholds
 const RISK_COLORS = {
@@ -46,6 +47,8 @@ const ORG_NAV = [
 export default function CoverageGapMap() {
   const navigate = useNavigate()
   const location = useLocation()
+  const isMobile = useIsMobile()
+  const SIDE_PAD = isMobile ? 16 : 48
 
   // Capture donor context on first render — persists across tab/filter changes within page
   const fromDonor      = useRef(location.state?.fromDonor || false)
@@ -116,7 +119,7 @@ export default function CoverageGapMap() {
       <div style={{ position: 'relative', zIndex: 1 }}>
 
         {/* ── Header ── */}
-        <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(27,67,50,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 48px', height: 68 }}>
+        <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(27,67,50,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `0 ${SIDE_PAD}px`, height: 68 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <button type="button" onClick={goBack}
               style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.75)' }}
@@ -162,15 +165,15 @@ export default function CoverageGapMap() {
         </header>
 
         {/* ── Page heading ── */}
-        <div style={{ padding: '40px 48px 20px' }}>
-          <h1 style={{ fontSize: 36, fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>Around Me</h1>
-          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
+        <div style={{ padding: `${isMobile ? 24 : 40}px ${SIDE_PAD}px 20px` }}>
+          <h1 style={{ fontSize: isMobile ? 28 : 36, fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>Around Me</h1>
+          <p style={{ fontSize: isMobile ? 13 : 15, color: 'rgba(255,255,255,0.55)', margin: 0 }}>
             Live demand risk signals for all scored postcodes · {totalCount} areas loaded
           </p>
         </div>
 
         {/* ── Info banner ── */}
-        <div style={{ margin: '0 48px 20px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(149,212,179,0.2)', borderRadius: 12, padding: '12px 18px' }}>
+        <div style={{ margin: `0 ${SIDE_PAD}px 20px`, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(149,212,179,0.2)', borderRadius: 12, padding: '12px 18px' }}>
           <button
             onClick={() => setShowInfo(!showInfo)}
             style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', color: '#95d4b3', fontWeight: 600, fontSize: '0.88rem', width: '100%', textAlign: 'left', padding: 0 }}
@@ -187,10 +190,10 @@ export default function CoverageGapMap() {
         </div>
 
         {/* ── Map + Side panel ── */}
-        <div style={{ display: 'flex', margin: '0 48px 48px', gap: 0, borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(149,212,179,0.15)', height: '62vh', minHeight: 480 }}>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', margin: `0 ${SIDE_PAD}px 48px`, gap: 0, borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(149,212,179,0.15)', height: isMobile ? 'auto' : '62vh', minHeight: isMobile ? 'auto' : 480 }}>
 
           {/* Map */}
-          <div style={{ flex: 1, position: 'relative' }}>
+          <div style={{ flex: 1, position: 'relative', height: isMobile ? '55vh' : 'auto', minHeight: isMobile ? 360 : 'auto' }}>
             <style>{`
               @keyframes cgm-pulse-ring {
                 0%   { transform: scale(0.6); opacity: 0.9; }
@@ -239,7 +242,7 @@ export default function CoverageGapMap() {
           </div>
 
           {/* Side panel */}
-          <div style={{ width: 280, background: 'rgba(27,67,50,0.92)', borderLeft: '1px solid rgba(149,212,179,0.15)', overflowY: 'auto', padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ width: isMobile ? '100%' : 280, background: 'rgba(27,67,50,0.92)', borderLeft: isMobile ? 'none' : '1px solid rgba(149,212,179,0.15)', borderTop: isMobile ? '1px solid rgba(149,212,179,0.15)' : 'none', overflowY: 'auto', padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
             {/* Legend — colours match ChoroplethMap TONE_FILL exactly */}
             <div>

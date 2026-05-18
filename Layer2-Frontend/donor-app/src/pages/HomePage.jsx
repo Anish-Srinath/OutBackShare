@@ -2,11 +2,13 @@ import { useNavigate } from 'react-router-dom'
 import logoUrl from '../assets/outbackshare-logo.png'
 import heroBg from '../assets/Gemini_Generated_Image_tfnod8tfnod8tfno.png'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import { useIsMobile } from '../utils/useIsMobile'
 
 const HANDS_IMG = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAMbSo66B4rcKCRGaTmb9NoE7PGidXGrFIDvxlABrMqnZHcVI1IwywSTeVtEwUEKWcvHfpgMJj8u34yw3PEZ38F0ef7aNt7SZZdXjHR5BNxSXRuYXAFyWeP9SixfAxbyn-YqmigCW_N57bli4qIiiBFT-ccODojYI7zTrmVGNSpALIcFPuk8KCj_db7qc0WoVPhojzKhUXytxwQbl6zlkglJVnhHSU2mxOXp269CDAQcfYMKakO1Mvk1EJBzqKXgLjp_JKhebZXbuI'
 
 export default function HomePage() {
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
 
   return (
     <div className="bg-background text-on-background overflow-x-hidden" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
@@ -140,11 +142,11 @@ export default function HomePage() {
         </section>
 
         {/* ── Pathfinding ── */}
-        <section id="pathfinding" className="paper-texture" style={{ padding: '104px 0', background: '#f4f4f1' }}>
-          <div className="mx-auto px-10 md:px-16" style={{ maxWidth: '1280px' }}>
+        <section id="pathfinding" className="paper-texture" style={{ padding: `${isMobile ? 48 : 104}px 0`, background: '#f4f4f1' }}>
+          <div className="mx-auto px-10 md:px-16" style={{ maxWidth: '1280px', paddingLeft: isMobile ? 16 : undefined, paddingRight: isMobile ? 16 : undefined }}>
             <div
               className="bg-white flex flex-col lg:flex-row items-center relative overflow-hidden"
-              style={{ gap: '72px', borderRadius: '2.5rem', padding: '72px', boxShadow: '0 20px 60px rgba(61,64,91,0.10)' }}
+              style={{ gap: isMobile ? 32 : 72, borderRadius: isMobile ? '1.5rem' : '2.5rem', padding: isMobile ? '32px 24px' : '72px', boxShadow: '0 20px 60px rgba(61,64,91,0.10)' }}
             >
               <div className="absolute top-0 right-0 w-80 h-80 bg-green-50 organic-blob -translate-y-1/2 translate-x-1/3 opacity-50" />
 
@@ -196,7 +198,7 @@ export default function HomePage() {
                   onMouseEnter={e => e.currentTarget.style.transform = 'rotate(0deg)'}
                   onMouseLeave={e => e.currentTarget.style.transform = 'rotate(2deg)'}
                 >
-                  <img alt="Hands exchanging food" src={HANDS_IMG} style={{ width: '100%', height: '500px', objectFit: 'cover' }} />
+                  <img alt="Hands exchanging food" src={HANDS_IMG} style={{ width: '100%', height: isMobile ? 280 : 500, objectFit: 'cover' }} />
                 </div>
                 <div className="organic-blob absolute" style={{ width: '128px', height: '128px', bottom: '-24px', left: '-24px', background: 'rgba(154,68,45,0.10)', zIndex: -1 }} />
               </div>
