@@ -109,6 +109,9 @@ async def ensure_schema_extensions():
     await database.execute("ALTER TABLE claim_thread ADD COLUMN IF NOT EXISTS donor_public_key TEXT")
     await database.execute("ALTER TABLE claim_thread ADD COLUMN IF NOT EXISTS claiming_public_key TEXT")
     await database.execute("ALTER TABLE claim_message ADD COLUMN IF NOT EXISTS iv VARCHAR(64)")
+    await database.execute("ALTER TABLE organization ADD COLUMN IF NOT EXISTS business_address VARCHAR(500)")
+    await database.execute("ALTER TABLE organization ADD COLUMN IF NOT EXISTS preferred_location VARCHAR(500)")
+    await database.execute("ALTER TABLE organization ADD COLUMN IF NOT EXISTS max_pickup_distance_km INT")
     await database.execute("UPDATE food_listing SET status = 'collected' WHERE status = 'picked_up'")
 
 
