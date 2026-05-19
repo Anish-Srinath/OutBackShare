@@ -106,7 +106,7 @@ export default function CoverageGapMap() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#1b4332', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#2d6a4f', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
 
       {/* Bloom layers */}
       <div style={{ position: 'fixed', top: '10%', left: '15%', width: 520, height: 520, borderRadius: '50%', background: 'rgba(45,106,79,0.28)', filter: 'blur(90px)', pointerEvents: 'none', zIndex: 0 }} />
@@ -119,7 +119,7 @@ export default function CoverageGapMap() {
       <div style={{ position: 'relative', zIndex: 1 }}>
 
         {/* ── Header ── */}
-        <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(27,67,50,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `0 ${SIDE_PAD}px`, height: 68 }}>
+        <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(45,106,79,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `0 ${SIDE_PAD}px`, height: 68 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <button type="button" onClick={goBack}
               style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.75)' }}
@@ -208,7 +208,7 @@ export default function CoverageGapMap() {
                 40%           { transform: scale(1);   opacity: 1;   }
               }
             `}</style>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10, gap: 28, background: 'linear-gradient(135deg, rgba(15,55,40,0.95) 0%, rgba(27,67,50,0.95) 100%)', opacity: loading ? 1 : 0, pointerEvents: loading ? 'auto' : 'none', transition: 'opacity 1s ease', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10, gap: 28, background: 'linear-gradient(135deg, rgba(15,55,40,0.95) 0%, rgba(45,106,79,0.95) 100%)', opacity: loading ? 1 : 0, pointerEvents: loading ? 'auto' : 'none', transition: 'opacity 1s ease', overflow: 'hidden' }}>
               {/* Shimmer scan band */}
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(149,212,179,0.08) 50%, transparent 100%)', backgroundSize: '200% 100%', animation: 'cgm-shimmer 2.4s ease-in-out infinite' }} />
 
@@ -242,7 +242,7 @@ export default function CoverageGapMap() {
           </div>
 
           {/* Side panel */}
-          <div style={{ width: isMobile ? '100%' : 280, background: 'rgba(27,67,50,0.92)', borderLeft: isMobile ? 'none' : '1px solid rgba(149,212,179,0.15)', borderTop: isMobile ? '1px solid rgba(149,212,179,0.15)' : 'none', overflowY: 'auto', padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ width: isMobile ? '100%' : 280, background: 'rgba(45,106,79,0.92)', borderLeft: isMobile ? 'none' : '1px solid rgba(149,212,179,0.15)', borderTop: isMobile ? '1px solid rgba(149,212,179,0.15)' : 'none', overflowY: 'auto', padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 20 }}>
             <style>{`
               .cgm-skel {
                 background: linear-gradient(

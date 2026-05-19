@@ -447,7 +447,7 @@ const LiveListingBoard = () => {
   const DARK_DETAIL_ROW = { display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'rgba(255,255,255,0.7)' }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#1b4332', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#2d6a4f', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative' }}>
 
       {/* Bloom effects */}
       <div style={{ position: 'fixed', top: '5%', left: '12%', width: 500, height: 500, borderRadius: '50%', background: 'rgba(45,106,79,0.28)', filter: 'blur(90px)', pointerEvents: 'none', zIndex: 0 }} />
@@ -542,7 +542,7 @@ const LiveListingBoard = () => {
       <div style={{ marginLeft: 256, flex: 1, display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
 
         {/* Top header */}
-        <header style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(27,67,50,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: 68 }}>
+        <header style={{ position: 'sticky', top: 0, zIndex: 40, background: 'rgba(45,106,79,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: 68 }}>
           <div>
             <h1 style={{ fontSize: 20, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.01em' }}>Live Listing Board</h1>
             <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: 0 }}>
@@ -998,7 +998,7 @@ const LiveListingBoard = () => {
         <div onClick={closeClaimDialog}
           style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(10,25,18,0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <div onClick={e => e.stopPropagation()}
-            style={{ background: 'rgba(27,67,50,0.98)', border: '1px solid rgba(149,212,179,0.25)', borderRadius: 24, padding: 32, maxWidth: 460, width: '100%', boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}>
+            style={{ background: 'rgba(45,106,79,0.98)', border: '1px solid rgba(149,212,179,0.25)', borderRadius: 24, padding: 32, maxWidth: 460, width: '100%', boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <h2 style={{ fontSize: 22, fontWeight: 700, color: '#fff', margin: 0 }}>{t('dashboard.claimDialog.title')}</h2>
               <button type="button" onClick={closeClaimDialog} style={{ border: 'none', background: 'rgba(255,255,255,0.08)', borderRadius: '50%', width: 34, height: 34, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.7)' }}>
@@ -1069,7 +1069,7 @@ const LiveListingBoard = () => {
         <div onClick={closeDetailsDialog}
           style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(10,25,18,0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <div onClick={e => e.stopPropagation()}
-            style={{ background: 'rgba(27,67,50,0.98)', border: '1px solid rgba(149,212,179,0.25)', borderRadius: 24, padding: 32, maxWidth: 460, width: '100%', boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}>
+            style={{ background: 'rgba(45,106,79,0.98)', border: '1px solid rgba(149,212,179,0.25)', borderRadius: 24, padding: 32, maxWidth: 460, width: '100%', boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <h2 style={{ fontSize: 22, fontWeight: 700, color: '#fff', margin: 0 }}>{t('dashboard.detailsDialog.title', 'Listing details')}</h2>
               <button type="button" onClick={closeDetailsDialog} style={{ border: 'none', background: 'rgba(255,255,255,0.08)', borderRadius: '50%', width: 34, height: 34, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.7)' }}>

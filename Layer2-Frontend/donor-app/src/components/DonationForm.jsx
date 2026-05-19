@@ -674,7 +674,7 @@ const DonationForm = () => {
   ]
 
   return (
-    <div style={{ minHeight: '100vh', background: '#1b4332', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#2d6a4f', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflowX: 'hidden' }}>
       {/* Organic bloom effects */}
       <div style={{ position: 'fixed', width: 700, height: 700, background: 'radial-gradient(circle, rgba(45,106,79,0.25) 0%, transparent 70%)', filter: 'blur(80px)', top: -250, left: -250, zIndex: 0, pointerEvents: 'none' }} />
       <div style={{ position: 'fixed', width: 700, height: 700, background: 'radial-gradient(circle, rgba(45,106,79,0.25) 0%, transparent 70%)', filter: 'blur(80px)', bottom: -250, right: -250, zIndex: 0, pointerEvents: 'none' }} />
@@ -682,7 +682,7 @@ const DonationForm = () => {
       <div style={{ position: 'fixed', inset: 0, backgroundImage: `url(${textureImg})`, backgroundSize: 'cover', opacity: 0.05, zIndex: 0, pointerEvents: 'none' }} />
 
       {/* ── Header ── */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(27,67,50,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 48px', height: 68 }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(45,106,79,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 48px', height: 68 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <button type="button" onClick={handleBack}
             style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.10)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#95d4b3', transition: 'background 0.15s' }}
@@ -725,7 +725,7 @@ const DonationForm = () => {
               <img src={previewImageUrl} alt="Food" onError={() => setPreviewLoadFailed(true)} style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', display: 'block' }} />
               <button type="button"
                 onClick={() => { selectedFileRef.current = null; setPreviewLoadFailed(false); handleChange('photoUrl', null); if (fileInputRef.current) fileInputRef.current.value = '' }}
-                style={{ position: 'absolute', bottom: 14, right: 14, background: 'rgba(27,67,50,0.85)', backdropFilter: 'blur(8px)', border: '1px solid rgba(149,212,179,0.3)', borderRadius: 999, padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#95d4b3', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit' }}
+                style={{ position: 'absolute', bottom: 14, right: 14, background: 'rgba(45,106,79,0.85)', backdropFilter: 'blur(8px)', border: '1px solid rgba(149,212,179,0.3)', borderRadius: 999, padding: '8px 16px', fontSize: 13, fontWeight: 600, color: '#95d4b3', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'inherit' }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>photo_camera</span>
                 {t('donation.changePhoto')}

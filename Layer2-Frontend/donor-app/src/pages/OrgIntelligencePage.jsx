@@ -202,7 +202,7 @@ export default function OrgIntelligencePage() {
   const legend      = activeView === 'spikes' ? spikeLegend : gapLegend
 
   return (
-    <div style={{ minHeight: '100vh', background: '#1b4332', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#2d6a4f', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflowX: 'hidden' }}>
 
       {/* Organic bloom effects */}
       <div style={{ position: 'fixed', width: 800, height: 800, background: 'radial-gradient(circle, rgba(45,106,79,0.28) 0%, transparent 70%)', filter: 'blur(90px)', top: -300, left: -300, zIndex: 0, pointerEvents: 'none' }} />
@@ -212,7 +212,7 @@ export default function OrgIntelligencePage() {
       <div style={{ position: 'fixed', inset: 0, backgroundImage: `url(${textureImg})`, backgroundSize: 'cover', opacity: 0.05, zIndex: 0, pointerEvents: 'none' }} />
 
       {/* ── Header ── */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(27,67,50,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `0 ${SIDE_PAD}px`, height: 68 }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(45,106,79,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `0 ${SIDE_PAD}px`, height: 68 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <button type="button" onClick={() => fromDonor.current ? navigate(donorReturnPath.current) : navigate('/org/listings', { state: { orgCode } })}
             style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.75)' }}
