@@ -20,17 +20,16 @@ const apiClient = axios.create({
   timeout: 120000,
 })
 
-// BUILD_MARKER_2026_05_20_PRED_FIX — unique string to detect stale bundle caching
-// Force the prediction service base URL unconditionally in production so we
-// can stop chasing the Vercel env var injection issue. Dev still uses the
-// Vite proxy. Side-effect log makes it impossible for tree-shaking to drop
-// this code, so the bundle hash MUST change when this file changes.
+// We DELIBERATELY use a runtime hostname check instead of `import.meta.env.DEV`
+// here: in this project's Vercel build pipeline `import.meta.env.DEV` is
+// being inlined as `true` even in production builds (verified by inspecting
+// the compiled bundle), which causes the ternary to always pick the dev
+// proxy path and silently break every map on production.
 const PRED_URL_PROD = 'https://prediction-service-production-a24f.up.railway.app'
-if (typeof window !== 'undefined') {
-  // eslint-disable-next-line no-console
-  console.log('[OutbackShare] prediction base:', import.meta.env.DEV ? '/pred-api' : PRED_URL_PROD)
-}
-const PREDICTION_BASE_URL = import.meta.env.DEV ? '/pred-api' : PRED_URL_PROD
+const _isLocalDev =
+  typeof window !== 'undefined' &&
+  /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)
+const PREDICTION_BASE_URL = _isLocalDev ? '/pred-api' : PRED_URL_PROD
 
 export const predictionApiClient = axios.create({
   baseURL: PREDICTION_BASE_URL,
