@@ -108,6 +108,26 @@ async def startup():
 	# Database connect
 	if database:
 		await database.connect()
+		# Ensure schema columns expected by our queries exist. The
+		# `risk_label` column was added later than the original table
+		# definition — older environments are missing it which causes
+		# `/predictions/all-risk-scores` to 500 with UndefinedColumnError.
+		await database.execute(
+			"ALTER TABLE postcode_risk_scores "
+			"ADD COLUMN IF NOT EXISTS risk_label VARCHAR(20)"
+		)
+		# Backfill any rows where it's still NULL using the same bucket
+		# thresholds as `_risk_label()` so the column has real data.
+		await database.execute("""
+			UPDATE postcode_risk_scores
+			SET risk_label = CASE
+				WHEN demand_risk_score >= 0.75 THEN 'high'
+				WHEN demand_risk_score >= 0.50 THEN 'medium-high'
+				WHEN demand_risk_score >= 0.25 THEN 'medium-low'
+				ELSE 'low'
+			END
+			WHERE risk_label IS NULL
+		""")
 
 	# Load ML models (singleton). If any model fails to load, mark risk_scorer None.
 	try:
