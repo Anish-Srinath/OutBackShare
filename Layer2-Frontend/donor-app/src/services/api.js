@@ -20,14 +20,17 @@ const apiClient = axios.create({
   timeout: 120000,
 })
 
-// Prediction service routes through a dedicated Vite proxy path in dev (/pred-api -> port 8001).
-// In production we prefer the VITE_PREDICTION_URL env var, but fall back to the
-// known Railway URL so the maps don't silently break if the env var isn't
-// injected into the build (Vercel env vars have been flaky for this project).
-const PRED_URL_FALLBACK = 'https://prediction-service-production-a24f.up.railway.app'
-const PREDICTION_BASE_URL = import.meta.env.DEV
-  ? '/pred-api'
-  : (String(import.meta.env.VITE_PREDICTION_URL || '').trim() || PRED_URL_FALLBACK)
+// BUILD_MARKER_2026_05_20_PRED_FIX — unique string to detect stale bundle caching
+// Force the prediction service base URL unconditionally in production so we
+// can stop chasing the Vercel env var injection issue. Dev still uses the
+// Vite proxy. Side-effect log makes it impossible for tree-shaking to drop
+// this code, so the bundle hash MUST change when this file changes.
+const PRED_URL_PROD = 'https://prediction-service-production-a24f.up.railway.app'
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line no-console
+  console.log('[OutbackShare] prediction base:', import.meta.env.DEV ? '/pred-api' : PRED_URL_PROD)
+}
+const PREDICTION_BASE_URL = import.meta.env.DEV ? '/pred-api' : PRED_URL_PROD
 
 export const predictionApiClient = axios.create({
   baseURL: PREDICTION_BASE_URL,
