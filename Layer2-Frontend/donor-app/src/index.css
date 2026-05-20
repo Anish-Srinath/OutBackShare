@@ -77,9 +77,9 @@ body {
 
 /* Dark-themed pages (donor / org workspaces) — dark green wrapper.
    Browsers may render hex as rgb() in the style attribute, match both. */
-[style*="#1b4332"],
-[style*="rgb(27, 67, 50)"],
-[style*="rgb(27,67,50)"] {
+[style*="#2d6a4f"],
+[style*="rgb(45, 106, 79)"],
+[style*="rgb(45,106,79)"] {
   background-image: var(--bg-dot-pattern) !important;
   background-size: var(--bg-dot-size) !important;
   background-attachment: fixed !important;

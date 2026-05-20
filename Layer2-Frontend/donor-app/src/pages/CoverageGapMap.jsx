@@ -106,7 +106,7 @@ export default function CoverageGapMap() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#1b4332', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: '#2d6a4f', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
 
       {/* Bloom layers */}
       <div style={{ position: 'fixed', top: '10%', left: '15%', width: 520, height: 520, borderRadius: '50%', background: 'rgba(45,106,79,0.28)', filter: 'blur(90px)', pointerEvents: 'none', zIndex: 0 }} />
@@ -119,7 +119,7 @@ export default function CoverageGapMap() {
       <div style={{ position: 'relative', zIndex: 1 }}>
 
         {/* ── Header ── */}
-        <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(27,67,50,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `0 ${SIDE_PAD}px`, height: 68 }}>
+        <header style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(45,106,79,0.84)', backdropFilter: 'blur(18px)', borderBottom: '1px solid rgba(149,212,179,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: `0 ${SIDE_PAD}px`, height: 68 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <button type="button" onClick={goBack}
               style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.75)' }}
@@ -208,7 +208,7 @@ export default function CoverageGapMap() {
                 40%           { transform: scale(1);   opacity: 1;   }
               }
             `}</style>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10, gap: 28, background: 'linear-gradient(135deg, rgba(15,55,40,0.95) 0%, rgba(27,67,50,0.95) 100%)', opacity: loading ? 1 : 0, pointerEvents: loading ? 'auto' : 'none', transition: 'opacity 1s ease', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 10, gap: 28, background: 'linear-gradient(135deg, rgba(15,55,40,0.95) 0%, rgba(45,106,79,0.95) 100%)', opacity: loading ? 1 : 0, pointerEvents: loading ? 'auto' : 'none', transition: 'opacity 1s ease', overflow: 'hidden' }}>
               {/* Shimmer scan band */}
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 0%, rgba(149,212,179,0.08) 50%, transparent 100%)', backgroundSize: '200% 100%', animation: 'cgm-shimmer 2.4s ease-in-out infinite' }} />
 
@@ -242,21 +242,45 @@ export default function CoverageGapMap() {
           </div>
 
           {/* Side panel */}
-          <div style={{ width: isMobile ? '100%' : 280, background: 'rgba(27,67,50,0.92)', borderLeft: isMobile ? 'none' : '1px solid rgba(149,212,179,0.15)', borderTop: isMobile ? '1px solid rgba(149,212,179,0.15)' : 'none', overflowY: 'auto', padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ width: isMobile ? '100%' : 280, background: 'rgba(45,106,79,0.92)', borderLeft: isMobile ? 'none' : '1px solid rgba(149,212,179,0.15)', borderTop: isMobile ? '1px solid rgba(149,212,179,0.15)' : 'none', overflowY: 'auto', padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <style>{`
+              .cgm-skel {
+                background: linear-gradient(
+                  90deg,
+                  rgba(255,255,255,0.04) 0%,
+                  rgba(255,255,255,0.10) 50%,
+                  rgba(255,255,255,0.04) 100%
+                );
+                background-size: 200% 100%;
+                animation: cgm-shimmer 1.6s ease-in-out infinite;
+                border-radius: 8px;
+              }
+            `}</style>
 
             {/* Legend — colours match ChoroplethMap TONE_FILL exactly */}
             <div>
               <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>
                 Risk level
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                {LEGEND.map(({ label, color }) => (
-                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ width: 14, height: 14, borderRadius: 3, background: color, flexShrink: 0, opacity: 0.9 }} />
-                    <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)' }}>{label}</span>
-                  </div>
-                ))}
-              </div>
+              {loading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                  {[0, 1, 2, 3, 4].map(i => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div className="cgm-skel" style={{ width: 14, height: 14, borderRadius: 3, flexShrink: 0 }} />
+                      <div className="cgm-skel" style={{ height: 11, width: `${[70, 90, 80, 50, 75][i]}%` }} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  {LEGEND.map(({ label, color }) => (
+                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ width: 14, height: 14, borderRadius: 3, background: color, flexShrink: 0, opacity: 0.9 }} />
+                      <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)' }}>{label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Summary */}
@@ -264,16 +288,29 @@ export default function CoverageGapMap() {
               <p style={{ fontSize: '0.68rem', fontWeight: 700, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
                 Coverage summary
               </p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <div>
-                  <p style={{ fontSize: '2rem', fontWeight: 700, color: '#fc9174', lineHeight: 1 }}>{atRiskCount}</p>
-                  <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', marginTop: 3 }}>at-risk zones (≥0.50)</p>
+              {loading ? (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                  <div style={{ flex: 1 }}>
+                    <div className="cgm-skel" style={{ height: 32, width: '50%', marginBottom: 6 }} />
+                    <div className="cgm-skel" style={{ height: 10, width: '85%' }} />
+                  </div>
+                  <div style={{ flex: 1, paddingLeft: 12 }}>
+                    <div className="cgm-skel" style={{ height: 20, width: '40%', marginLeft: 'auto', marginBottom: 6 }} />
+                    <div className="cgm-skel" style={{ height: 10, width: '70%', marginLeft: 'auto' }} />
+                  </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: '1.2rem', fontWeight: 700, color: '#95d4b3', lineHeight: 1 }}>{totalCount}</p>
-                  <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', marginTop: 3 }}>total zones</p>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                  <div>
+                    <p style={{ fontSize: '2rem', fontWeight: 700, color: '#fc9174', lineHeight: 1 }}>{atRiskCount}</p>
+                    <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', marginTop: 3 }}>at-risk zones (≥0.50)</p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '1.2rem', fontWeight: 700, color: '#95d4b3', lineHeight: 1 }}>{totalCount}</p>
+                    <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', marginTop: 3 }}>total zones</p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Selected postcode detail */}

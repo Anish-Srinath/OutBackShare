@@ -33,7 +33,7 @@ const OrgCodeInputPage = () => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#1b4332', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', background: '#2d6a4f', fontFamily: 'Inter, system-ui, sans-serif', position: 'relative', overflow: 'hidden' }}>
 
       {/* Bloom effects */}
       <div style={{ position: 'fixed', top: '5%', left: '10%', width: 500, height: 500, borderRadius: '50%', background: 'rgba(45,106,79,0.3)', filter: 'blur(90px)', pointerEvents: 'none', zIndex: 0 }} />
