@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { saveDonorPostcode } from '../utils/donorPostcode'
+import postcodeData from '../data/vic_postcode_suburbs.json'
 import logoUrl from '../assets/outbackshare-logo.png'
 import produceImg from '../assets/postcode-produce.jpg'
 import mapImg from '../assets/postcode-map.jpg'
@@ -31,9 +32,20 @@ const PostcodeInputPage = () => {
       return
     }
     if (/^\d{4}$/.test(trimmed)) {
+      if (!postcodeData[trimmed]) {
+        setError('That postcode is outside our service area. OutBackShare currently serves regional Victoria only.')
+        return
+      }
       saveDonorPostcode(trimmed)
       navigate('/donor/listings', { state: { postcode: trimmed } })
     } else {
+      const match = Object.entries(postcodeData).find(
+        ([, suburb]) => suburb.toLowerCase() === trimmed.toLowerCase()
+      )
+      if (!match) {
+        setError('That suburb is outside our service area. OutBackShare currently serves regional Victoria only.')
+        return
+      }
       navigate('/donor/listings', { state: { suburb: trimmed } })
     }
   }
@@ -132,7 +144,7 @@ const PostcodeInputPage = () => {
                     type="text"
                     value={location}
                     onChange={handleInputChange}
-                    placeholder="e.g. 3000 or Melbourne"
+                    placeholder="e.g. 3550 or Bendigo"
                     maxLength={60}
                     autoComplete="postal-code"
                     style={{
