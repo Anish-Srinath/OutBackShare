@@ -65,7 +65,7 @@ export default function HotspotMap() {
     setLoading(true)
     setFetchError(false)
     predictionApiClient.get('/predictions/hotspots', { params: { limit: 495 } })
-      .then(res => setHotspots(res.data || []))
+      .then(res => setHotspots(Array.isArray(res.data) ? res.data : []))
       .catch(() => setFetchError(true))
       .finally(() => setLoading(false))
   }

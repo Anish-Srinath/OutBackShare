@@ -50,7 +50,7 @@ export default function OrgIntelligencePage() {
     let cancelled = false
     setLoading(true); setError('')
     predictionApiClient.get('/intelligence/supply-gaps')
-      .then(res => { if (!cancelled) setApiRows(res.data || []) })
+      .then(res => { if (!cancelled) setApiRows(Array.isArray(res.data) ? res.data : []) })
       .catch(() => setError('load-failed'))
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }

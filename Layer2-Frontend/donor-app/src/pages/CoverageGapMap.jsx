@@ -72,7 +72,7 @@ export default function CoverageGapMap() {
     let cancelled = false
     setLoading(true)
     predictionApiClient.get('/predictions/all-risk-scores')
-      .then(res => { if (!cancelled) setRiskData(res.data || []) })
+      .then(res => { if (!cancelled) setRiskData(Array.isArray(res.data) ? res.data : []) })
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
