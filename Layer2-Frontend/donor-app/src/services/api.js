@@ -20,10 +20,14 @@ const apiClient = axios.create({
   timeout: 120000,
 })
 
-// Prediction service routes through a dedicated Vite proxy path in dev (/pred-api → port 8001).
+// Prediction service routes through a dedicated Vite proxy path in dev (/pred-api -> port 8001).
+// In production we prefer the VITE_PREDICTION_URL env var, but fall back to the
+// known Railway URL so the maps don't silently break if the env var isn't
+// injected into the build (Vercel env vars have been flaky for this project).
+const PRED_URL_FALLBACK = 'https://prediction-service-production-a24f.up.railway.app'
 const PREDICTION_BASE_URL = import.meta.env.DEV
   ? '/pred-api'
-  : (String(import.meta.env.VITE_PREDICTION_URL || '').trim() || '/pred-api')
+  : (String(import.meta.env.VITE_PREDICTION_URL || '').trim() || PRED_URL_FALLBACK)
 
 export const predictionApiClient = axios.create({
   baseURL: PREDICTION_BASE_URL,
