@@ -50,7 +50,7 @@ See [Architecture Documentation](docs/ARCHITECTURE.md) for details
 ## 📁 Project Structure
 
 ```
-CrisisLink/
+OutBackShare/
 ├── Layer5-Data/                    # Data Layer
 │   ├── postgresql/                 # Database schema & migrations
 │   ├── abs-seifa-data/             # ABS SEIFA 2021 data
