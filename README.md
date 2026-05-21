@@ -1,4 +1,4 @@
-# CrisisLink - Food Relief and Surplus Resource Coordination Platform
+# OutBackShare - Food Relief and Surplus Resource Coordination Platform
 
 > Real-time Food Relief and Surplus Resource Coordination Platform Powered by AI
 
