@@ -323,27 +323,6 @@
     "example": "Enter an organisation code or name to continue",
     "note": "Only approved community organisations can access live listings."
   },
-  "accessGate": {
-    "badge": "Project access",
-    "title": "Access OutBackShare",
-    "subtitle": "For approved partners and demonstration users.",
-    "label": "Password",
-    "placeholder": "",
-    "button": "Continue",
-    "error": "Incorrect password. Please try again.",
-    "heroTitle": "Local surplus food, coordinated before it goes to waste.",
-    "heroCopy": "OutBackShare connects local food donors with approved community organisations, helping surplus food reach nearby communities faster.",
-    "highlightsLabel": "Platform highlights",
-    "bullets": {
-      "post": "Post surplus food quickly",
-      "coordinate": "Coordinate nearby collection",
-      "spot": "Spot local shortage signals early"
-    },
-    "builtFor": "Built for",
-    "donorRole": "Donors sharing surplus food",
-    "orgRole": "Community organisations coordinating collection",
-    "trust": "Access is limited to approved partners and demonstration users."
-  },
   "dashboard": {
     "title": "Food listings",
     "subtitle": "Claim available food or manage your organisation listings.",

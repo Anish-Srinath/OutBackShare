@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState, Component } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import React, { Component } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 
 // Pages - Donor Flow
@@ -41,74 +40,6 @@ class MapErrorBoundary extends Component {
   }
 }
 
-const ACCESS_STORAGE_KEY = 'crisislink-site-access-granted-v2'
-
-function PasswordGate({ expectedPassword, children }) {
-  const { t } = useTranslation()
-  const [inputPassword, setInputPassword] = useState('')
-  const [error, setError] = useState('')
-  const [isUnlocked, setIsUnlocked] = useState(false)
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    if (!expectedPassword) {
-      setIsUnlocked(true)
-      return
-    }
-    window.localStorage.removeItem(ACCESS_STORAGE_KEY)
-    setIsUnlocked(window.sessionStorage.getItem(ACCESS_STORAGE_KEY) === 'true')
-  }, [expectedPassword])
-
-  const handleSubmit = (event) => {
-    event.preventDefault()
-
-    if (inputPassword.trim() === expectedPassword) {
-      window.sessionStorage.setItem(ACCESS_STORAGE_KEY, 'true')
-      setIsUnlocked(true)
-      setError('')
-      navigate('/', { replace: true })
-      return
-    }
-
-    setError(t('accessGate.error'))
-  }
-
-  if (isUnlocked) {
-    return children
-  }
-
-  return (
-    <div className="site-gate-shell">
-      <div className="site-gate-layout site-gate-layout--centered">
-        <div className="site-gate-card">
-          <h2>{t('accessGate.title')}</h2>
-          <p>{t('accessGate.subtitle')}</p>
-
-          <form className="site-gate-form" onSubmit={handleSubmit}>
-            <label htmlFor="site-password">{t('accessGate.label')}</label>
-            <input
-              id="site-password"
-              type="password"
-              value={inputPassword}
-              onChange={(event) => {
-                setInputPassword(event.target.value)
-                if (error) {
-                  setError('')
-                }
-              }}
-              placeholder={t('accessGate.placeholder')}
-              aria-invalid={error ? 'true' : 'false'}
-              aria-describedby={error ? 'site-password-error' : undefined}
-            />
-            {error ? <p id="site-password-error" className="site-gate-error">{error}</p> : null}
-            <button type="submit" disabled={!inputPassword.trim()}>{t('accessGate.button')}</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function AppRoutes() {
   return (
     <Routes>
@@ -145,16 +76,9 @@ function AppRoutes() {
 }
 
 function App() {
-  const expectedPassword = useMemo(
-    () => import.meta.env.VITE_SITE_PASSWORD?.trim() || '',
-    [],
-  )
-
   return (
     <BrowserRouter>
-      <PasswordGate expectedPassword={expectedPassword}>
-        <AppRoutes />
-      </PasswordGate>
+      <AppRoutes />
     </BrowserRouter>
   )
 }

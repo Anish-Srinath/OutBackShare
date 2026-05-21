@@ -321,27 +321,6 @@
     "example": "请输入社区组织代码或名称后继续",
     "note": "只有通过验证的社区组织才能访问实时物品列表。"
   },
-  "accessGate": {
-    "badge": "项目访问",
-    "title": "进入 OutBackShare",
-    "subtitle": "仅供已批准合作伙伴和演示用户使用。",
-    "label": "密码",
-    "placeholder": "",
-    "button": "继续",
-    "error": "密码错误，请重试。",
-    "heroTitle": "在食物被浪费前，把本地剩余资源先协调起来。",
-    "heroCopy": "OutBackShare 连接本地食物捐赠者与已认证的社区组织，帮助剩余食物更快送达附近社区。",
-    "highlightsLabel": "平台亮点",
-    "bullets": {
-      "post": "快速发布剩余食物",
-      "coordinate": "协调附近取货与分发",
-      "spot": "提前识别本地短缺信号"
-    },
-    "builtFor": "适用角色",
-    "donorRole": "分享剩余食物的捐赠者",
-    "orgRole": "协调本地分发的社区组织",
-    "trust": "访问仅限已批准合作伙伴和演示用户。"
-  },
   "dashboard": {
     "title": "食物列表",
     "subtitle": "领取可用食物，或管理你们组织发布的物品。",
